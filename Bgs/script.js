@@ -1,20 +1,53 @@
-let userData = {
-  name: 'John Doe',
-  email: 'john@example.com',
-  age: 30,
-  gender: 'male',
-  height: 175,
-  weight: 75,
-  healthStatus: 'healthy',
-  goal: 'healthy_lifestyle',
-};
-let isFirstTimeUser = false;
-let mealsLogged = [];
+// Get user data from localStorage or use defaults
+let userData = JSON.parse(localStorage.getItem('valdoUserData')) || null;
+let isFirstTimeUser = localStorage.getItem('valdoFirstTimeUser') === 'true';
+let mealsLogged = JSON.parse(localStorage.getItem('valdoMeals')) || [];
 
-setTimeout(() => {
-  updateDashboard();
-  showScreen('mainDashboard');
-}, 100);
+// Save user data to localStorage
+function saveUserData() {
+  localStorage.setItem('valdoUserData', JSON.stringify(userData));
+}
+
+function saveMeals() {
+  localStorage.setItem('valdoMeals', JSON.stringify(mealsLogged));
+}
+
+function saveFirstTimeUser() {
+  localStorage.setItem('valdoFirstTimeUser', isFirstTimeUser.toString());
+}
+
+// Clear all user data (for logout)
+function clearUserData() {
+  localStorage.removeItem('valdoUserData');
+  localStorage.removeItem('valdoMeals');
+  localStorage.removeItem('valdoFirstTimeUser');
+  userData = null;
+  mealsLogged = [];
+  isFirstTimeUser = false;
+}
+
+// Get today's meals only
+function getTodaysMeals() {
+  const today = new Date().toISOString().split('T')[0];
+  return mealsLogged.filter(meal => meal.date === today);
+}
+
+// Check if user is already logged in on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const storedUserData = JSON.parse(localStorage.getItem('valdoUserData'));
+  
+  if (storedUserData) {
+    // User is logged in, show dashboard
+    updateDashboard();
+    showScreen('mainDashboard');
+  } else {
+    // No user data, show welcome screens
+    setTimeout(() => showScreen('welcome1'), 100);
+    setTimeout(() => showScreen('welcome2'), 3000);
+    setTimeout(() => showScreen('welcome3'), 6000);
+    setTimeout(() => showScreen('welcomeFinal'), 9000);
+  }
+});
 
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach((screen) => {
@@ -30,17 +63,33 @@ function handleSignIn(event) {
   event.preventDefault();
 
   const email = document.getElementById('signinEmail').value;
+  const password = document.getElementById('signinPassword').value;
 
-  userData = {
-    name: 'John Doe',
-    email: email,
-    age: 30,
-    gender: 'male',
-    height: 175,
-    weight: 75,
-    healthStatus: 'healthy',
-    goal: 'healthy_lifestyle',
-  };
+  // In a real app, you'd verify credentials
+  // For demo, we'll use localStorage data or create demo data
+  const storedUser = JSON.parse(localStorage.getItem('valdoUserData'));
+  
+  if (storedUser && storedUser.email === email) {
+    // User exists in localStorage
+    userData = storedUser;
+    mealsLogged = JSON.parse(localStorage.getItem('valdoMeals')) || [];
+    isFirstTimeUser = localStorage.getItem('valdoFirstTimeUser') === 'true';
+  } else {
+    // Create demo user (for first time sign in)
+    userData = {
+      name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+      email: email,
+      age: 30,
+      gender: 'male',
+      height: 175,
+      weight: 75,
+      healthStatus: 'healthy',
+      goal: 'healthy_lifestyle',
+    };
+    saveUserData();
+    isFirstTimeUser = true;
+    saveFirstTimeUser();
+  }
 
   updateDashboard();
   showScreen('mainDashboard');
@@ -51,16 +100,21 @@ function handleSignUp(event) {
 
   userData = {
     name: document.getElementById('signupName').value,
-    age: document.getElementById('signupAge').value,
+    age: parseInt(document.getElementById('signupAge').value),
     gender: document.getElementById('signupGender').value,
-    height: document.getElementById('signupHeight').value,
-    weight: document.getElementById('signupWeight').value,
+    height: parseInt(document.getElementById('signupHeight').value),
+    weight: parseInt(document.getElementById('signupWeight').value),
     healthStatus: document.getElementById('signupHealthStatus').value,
     goal: document.getElementById('signupGoal').value,
     email: document.getElementById('signupEmail').value,
   };
 
   isFirstTimeUser = true;
+  
+  // Save to localStorage
+  saveUserData();
+  saveFirstTimeUser();
+  
   showScreen('tutorial');
 }
 
@@ -77,9 +131,10 @@ function saveWeightInput() {
   const weight = document.getElementById('morningWeight').value;
   const height = document.getElementById('morningHeight').value;
 
-  if (weight) userData.weight = weight;
-  if (height) userData.height = height;
+  if (weight) userData.weight = parseFloat(weight);
+  if (height) userData.height = parseFloat(height);
 
+  saveUserData(); // Save changes to localStorage
   document.getElementById('weightModal').classList.remove('active');
   updateDashboard();
   showScreen('mainDashboard');
@@ -106,13 +161,15 @@ function submitMealLog(event) {
     type: document.getElementById('mealType').value,
     description: document.getElementById('mealDescription').value,
     calories: parseInt(document.getElementById('mealCalories').value),
-    carbs: document.getElementById('mealCarbs').value || 0,
-    protein: document.getElementById('mealProtein').value || 0,
-    fat: document.getElementById('mealFat').value || 0,
-    time: new Date().toLocaleTimeString(),
+    carbs: document.getElementById('mealCarbs').value ? parseInt(document.getElementById('mealCarbs').value) : 0,
+    protein: document.getElementById('mealProtein').value ? parseInt(document.getElementById('mealProtein').value) : 0,
+    fat: document.getElementById('mealFat').value ? parseInt(document.getElementById('mealFat').value) : 0,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    date: new Date().toISOString().split('T')[0] // Store date for filtering
   };
 
   mealsLogged.push(meal);
+  saveMeals(); // Save to localStorage
 
   const form = document.getElementById('manualLogForm');
   if (form) form.reset();
@@ -128,12 +185,15 @@ function submitMealLog(event) {
 
 function completeTutorial() {
   isFirstTimeUser = false;
+  saveFirstTimeUser();
   updateDashboard();
   showScreen('mainDashboard');
 }
 
 function updateDashboard() {
   if (!userData) return;
+
+  const todaysMeals = getTodaysMeals();
 
   const userName = document.getElementById('userName');
   if (userName) {
@@ -156,7 +216,7 @@ function updateDashboard() {
   const stepCount = document.getElementById('stepCount');
   if (stepCount) stepCount.textContent = '8,543';
 
-  const totalCalories = mealsLogged.reduce(
+  const totalCalories = todaysMeals.reduce(
     (sum, meal) => sum + meal.calories,
     0
   );
@@ -168,24 +228,20 @@ function updateDashboard() {
 
   const streakCount = document.getElementById('streakCount');
   if (streakCount) {
-    streakCount.textContent = mealsLogged.length > 0 ? '5' : '0';
+    streakCount.textContent = todaysMeals.length > 0 ? '5' : '0';
   }
 
   const container = document.getElementById('mealLogContainer');
   if (container) {
-    if (mealsLogged.length > 0) {
+    if (todaysMeals.length > 0) {
       container.innerHTML = '';
-      mealsLogged.forEach((meal) => {
+      todaysMeals.forEach((meal) => {
         container.innerHTML += `
           <div class="meal-item">
-            <h4>${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)} - ${
-          meal.time
-        }</h4>
+            <h4>${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)} - ${meal.time}</h4>
             <p>${meal.description}</p>
             <p style="font-weight: 600; color: #667eea; margin-top: 5px;">
-              ${meal.calories} cal | Carbs: ${meal.carbs}g | Protein: ${
-          meal.protein
-        }g | Fat: ${meal.fat}g
+              ${meal.calories} cal | Carbs: ${meal.carbs}g | Protein: ${meal.protein}g | Fat: ${meal.fat}g
             </p>
           </div>
         `;
@@ -204,12 +260,12 @@ function updateDashboard() {
   }
 
   const aiFeedback = document.getElementById('aiFeedback');
-  if (aiFeedback && mealsLogged.length > 0) {
-    const lastMeal = mealsLogged[mealsLogged.length - 1];
+  if (aiFeedback && todaysMeals.length > 0) {
+    const lastMeal = todaysMeals[todaysMeals.length - 1];
     aiFeedback.textContent = `Great job logging your ${lastMeal.type}! Your ${lastMeal.calories} calorie meal is well-balanced. Keep up the consistent tracking!`;
   }
 
-  const progress = Math.min((mealsLogged.length / 3) * 100, 100);
+  const progress = Math.min((todaysMeals.length / 3) * 100, 100);
   const progressBar = document.getElementById('progressBar');
   if (progressBar) progressBar.style.width = progress + '%';
 
@@ -218,11 +274,11 @@ function updateDashboard() {
 
   const progressText = document.getElementById('progressText');
   if (progressText) {
-    if (mealsLogged.length >= 3) {
+    if (todaysMeals.length >= 3) {
       progressText.textContent =
         "Excellent! You've logged all your meals today!";
     } else {
-      progressText.textContent = `${mealsLogged.length}/3 meals logged today. Keep going!`;
+      progressText.textContent = `${todaysMeals.length}/3 meals logged today. Keep going!`;
     }
   }
 
@@ -287,6 +343,12 @@ function navigateTo(screenId) {
   document.querySelectorAll('.nav-item').forEach((item) => {
     item.classList.remove('active');
   });
+
+  // Set the active nav item
+  const activeNavItem = document.querySelector(`.nav-item[onclick*="${screenId}"]`);
+  if (activeNavItem) {
+    activeNavItem.classList.add('active');
+  }
 }
 
 function handleChatEnter(event) {
@@ -333,9 +395,7 @@ function sendMessage() {
 
 function handleLogout() {
   if (confirm('Are you sure you want to log out?')) {
-    userData = null;
-    mealsLogged = [];
-    isFirstTimeUser = false;
+    clearUserData();
     showScreen('welcome1');
 
     setTimeout(() => showScreen('welcome2'), 3000);
