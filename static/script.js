@@ -42,6 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // User is logged in, show dashboard
     updateDashboard();
     showScreen('mainDashboard');
+
+    // Show weight input modal if it's a new day
+    const today = new Date().toDateString();
+    const lastWeightInput = localStorage.getItem('valdoLastWeightInput');
+    if (lastWeightInput !== today) {
+      setTimeout(showWeightInputModal, 1000);
+    }
   } else {
     // No user data, show welcome screens
     setTimeout(() => showScreen('welcome1'), 100);
@@ -333,6 +340,13 @@ function handleSignIn(event) {
 
   updateDashboard();
   showScreen('mainDashboard');
+
+  // Show weight input modal if it's a new day
+  const today = new Date().toDateString();
+  const lastWeightInput = localStorage.getItem('valdoLastWeightInput');
+  if (lastWeightInput !== today) {
+    setTimeout(showWeightInputModal, 1000);
+  }
 }
 
 function handleSignUp(event) {
@@ -364,6 +378,8 @@ function showWeightInputModal() {
 
 function skipWeightInput() {
   document.getElementById('weightModal').classList.remove('active');
+  // Save today's date to avoid showing the modal again today
+  localStorage.setItem('valdoLastWeightInput', new Date().toDateString());
   showScreen('mainDashboard');
 }
 
@@ -375,6 +391,10 @@ function saveWeightInput() {
   if (height) userData.height = parseFloat(height);
 
   saveUserData(); // Save changes to localStorage
+
+  // Save today's date to avoid showing the modal again today
+  localStorage.setItem('valdoLastWeightInput', new Date().toDateString());
+
   document.getElementById('weightModal').classList.remove('active');
   updateDashboard();
   showScreen('mainDashboard');
@@ -435,23 +455,35 @@ function submitMealLog(event) {
     console.log('Dashboard updated after meal log');
   }, 100);
 
+  // For first-time users, navigate to celebration after modal
   if (isFirstTimeUser && mealsLogged.length === 1) {
-    setTimeout(() => {
-      closeSuccessModal();
-      showScreen('celebration');
-    }, 2000);
+    // Remove the automatic navigation and let user click the button
+    console.log('First meal logged by new user');
   }
 }
 
 function showSuccessModal(message) {
   const modal = document.getElementById('successModal');
   const messageElement = document.getElementById('successMessage');
+
+  console.log('Showing success modal:', modal, messageElement);
+
   if (modal && messageElement) {
     messageElement.innerHTML = message;
     modal.classList.add('active');
     console.log('Success modal activated');
+
+    // Add event listener for backdrop click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeSuccessModal();
+      }
+    });
   } else {
-    console.error('Success modal elements not found');
+    console.error('Success modal elements not found:', {
+      modal: modal,
+      messageElement: messageElement
+    });
   }
 }
 
@@ -462,8 +494,12 @@ function closeSuccessModal() {
     console.log('Success modal closed');
   }
 
-  // Always navigate to dashboard after closing modal (unless it's first time user)
-  if (!isFirstTimeUser || mealsLogged.length > 1) {
+  // Navigate based on user type
+  if (isFirstTimeUser && mealsLogged.length === 1) {
+    // First-time user's first meal - go to celebration
+    showScreen('celebration');
+  } else {
+    // Regular user or subsequent meals - go to dashboard
     navigateTo('mainDashboard');
   }
 }
