@@ -335,13 +335,10 @@
               <h3>Manual Entry</h3>
               <p>Enter meal details manually</p>
             </div>
-            <div
-              class="option-card"
-              onclick="alert('📸 Camera feature would connect to OpenAI Vision API in production.\n\nFor this demo, please use Manual Entry instead.')"
-            >
+            <div class="option-card" onclick="navigateTo('cameraScan')">
               <div class="icon">📸</div>
-              <h3>Take a Photo</h3>
-              <p>Scan nutrition label with camera</p>
+              <h3>Scan Nutrition Label</h3>
+              <p>Take photo of nutrition facts</p>
             </div>
           </div>
 
@@ -432,6 +429,73 @@
             <div class="icon">👤</div>
             <div class="label">Profile</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Updated Success Modal - Make sure this is in your HTML -->
+      <div id="successModal" class="modal">
+        <div class="modal-content success-modal">
+          <div class="success-icon">✅</div>
+          <h3>Success!</h3>
+          <p id="successMessage" class="success-details">Meal logged successfully!</p>
+          <button class="btn-primary" onclick="closeSuccessModal()">Continue to Dashboard</button>
+        </div>
+      </div>
+
+       <!-- Updated Camera Scan Screen -->
+      <div id="cameraScan" class="screen">
+        <div class="camera-scan-screen">
+          <h2>Scan Nutrition Label</h2>
+          <p style="color: #666; margin-top: 10px; text-align: center;">
+            Take a clear photo of the nutrition facts label
+          </p>
+
+          <div class="camera-container">
+            <video id="cameraPreview" autoplay playsinline></video>
+            <canvas id="photoCanvas" style="display: none;"></canvas>
+
+            <div class="camera-controls">
+              <button id="captureBtn" class="btn-capture" onclick="capturePhoto()">
+                📸
+              </button>
+              <button class="btn-switch" onclick="switchCamera()">
+                🔄
+              </button>
+            </div>
+          </div>
+
+          <div id="scanResult" class="scan-result" style="display: none;">
+            <h3>✅ Scan Successful!</h3>
+            <p style="color: #666; margin-bottom: 15px;">We found these nutrition facts:</p>
+            <div id="nutritionData" class="nutrition-data">
+              <!-- Nutrition data will be displayed here -->
+            </div>
+            <div class="scan-actions">
+              <button class="btn-retry" onclick="retryScan()">Retry Scan</button>
+              <button class="btn-confirm" onclick="confirmScan()">Confirm & Log Meal</button>
+            </div>
+          </div>
+
+          <div id="scanError" class="scan-error" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Scan Failed</h3>
+            <p id="errorMessage">Could not read nutrition facts. Please try again.</p>
+            <button class="btn-retry" onclick="retryScan()">Try Again</button>
+          </div>
+
+          <div class="camera-instructions">
+            <h4>📋 Instructions:</h4>
+            <ul>
+              <li>Ensure good lighting</li>
+              <li>Position label clearly in frame</li>
+              <li>Avoid glare and shadows</li>
+              <li>Make sure text is readable</li>
+            </ul>
+          </div>
+
+          <button class="btn-back" onclick="navigateTo('mealLog')" style="margin-top: 20px;">
+            ← Back to Meal Log
+          </button>
         </div>
       </div>
 

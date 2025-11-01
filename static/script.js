@@ -2,6 +2,8 @@
 let userData = JSON.parse(localStorage.getItem('valdoUserData')) || null;
 let isFirstTimeUser = localStorage.getItem('valdoFirstTimeUser') === 'true';
 let mealsLogged = JSON.parse(localStorage.getItem('valdoMeals')) || [];
+let currentStream = null;
+let currentCamera = 'environment';
 
 // Save user data to localStorage
 function saveUserData() {
@@ -35,7 +37,7 @@ function getTodaysMeals() {
 // Check if user is already logged in on page load
 document.addEventListener('DOMContentLoaded', function() {
   const storedUserData = JSON.parse(localStorage.getItem('valdoUserData'));
-  
+
   if (storedUserData) {
     // User is logged in, show dashboard
     updateDashboard();
@@ -108,6 +110,172 @@ function initializeAIChat() {
   }
 }
 
+// Camera functionality
+async function startCamera() {
+  try {
+    const video = document.getElementById('cameraPreview');
+    const constraints = {
+      video: {
+        facingMode: currentCamera,
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = currentStream;
+
+    // Hide scan results and errors when starting camera
+    document.getElementById('scanResult').style.display = 'none';
+    document.getElementById('scanError').style.display = 'none';
+
+  } catch (error) {
+    console.error('Error starting camera:', error);
+    alert('Could not access camera. Please ensure you have granted camera permissions.');
+  }
+}
+
+function stopCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+}
+
+function switchCamera() {
+  currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+  stopCamera();
+  startCamera();
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraPreview');
+  const canvas = document.getElementById('photoCanvas');
+  const context = canvas.getContext('2d');
+
+  // Set canvas dimensions to match video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Draw current video frame to canvas
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Convert to base64
+  const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+  // Stop camera and process image
+  stopCamera();
+  processNutritionScan(imageData);
+}
+
+async function processNutritionScan(imageData) {
+  const captureBtn = document.getElementById('captureBtn');
+  const originalText = captureBtn.innerHTML;
+
+  // Show loading state
+  captureBtn.innerHTML = '<div class="loading"></div>';
+  captureBtn.disabled = true;
+
+  try {
+    const response = await fetch('http://localhost:5000/scan-nutrition', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageData })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      displayScanResults(data.nutrition_data);
+    } else {
+      showScanError(data.error);
+    }
+  } catch (error) {
+    console.error('Scan error:', error);
+    showScanError('Network error. Please check your connection and try again.');
+  } finally {
+    captureBtn.innerHTML = originalText;
+    captureBtn.disabled = false;
+  }
+}
+
+function displayScanResults(nutritionData) {
+  const resultDiv = document.getElementById('scanResult');
+  const nutritionDiv = document.getElementById('nutritionData');
+
+  let html = '';
+  for (const [key, value] of Object.entries(nutritionData)) {
+    if (value !== null) {
+      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      html += `<div class="nutrition-item">
+        <span>${formattedKey}:</span>
+        <strong>${value}</strong>
+      </div>`;
+    }
+  }
+
+  nutritionDiv.innerHTML = html;
+  resultDiv.style.display = 'block';
+
+  // Store the scanned data for confirmation
+  window.currentScanData = nutritionData;
+}
+
+function showScanError(message) {
+  const errorDiv = document.getElementById('scanError');
+  const errorMessage = document.getElementById('errorMessage');
+
+  errorMessage.textContent = message;
+  errorDiv.style.display = 'block';
+}
+
+function retryScan() {
+  // Hide results and errors
+  document.getElementById('scanResult').style.display = 'none';
+  document.getElementById('scanError').style.display = 'none';
+
+  // Restart camera
+  startCamera();
+}
+
+function confirmScan() {
+  if (!window.currentScanData) return;
+
+  const nutrition = window.currentScanData;
+
+  // Create meal object directly from scanned data
+  const meal = {
+    type: 'snack', // Default type, user can change if needed
+    description: `Scanned food item${nutrition.serving_size ? ` (${nutrition.serving_size})` : ''}`,
+    calories: nutrition.calories || 0,
+    carbs: nutrition.carbohydrates || 0,
+    protein: nutrition.protein || 0,
+    fat: nutrition.fat || 0,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    date: new Date().toISOString().split('T')[0]
+  };
+
+  // Add the meal directly
+  mealsLogged.push(meal);
+  saveMeals();
+
+  // Show success message
+  const successMessage = `Meal logged successfully from scan!<br><br>
+    <strong>${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}</strong><br>
+    ${meal.description}<br>
+    ${meal.calories} calories | Carbs: ${meal.carbs}g | Protein: ${meal.protein}g | Fat: ${meal.fat}g`;
+
+  showSuccessModal(successMessage);
+
+  // Update dashboard and navigate
+  updateDashboard();
+
+  // Clear scanned data
+  window.currentScanData = null;
+}
+
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach((screen) => {
     screen.classList.remove('active');
@@ -115,6 +283,19 @@ function showScreen(screenId) {
   const targetScreen = document.getElementById(screenId);
   if (targetScreen) {
     targetScreen.classList.add('active');
+
+    // Start camera when camera screen is shown
+    if (screenId === 'cameraScan') {
+      setTimeout(startCamera, 100);
+    } else {
+      // Stop camera when leaving camera screen
+      stopCamera();
+    }
+
+    // Update dashboard when showing main dashboard
+    if (screenId === 'mainDashboard') {
+      updateDashboard();
+    }
   }
 }
 
@@ -127,7 +308,7 @@ function handleSignIn(event) {
   // In a real app, you'd verify credentials
   // For demo, we'll use localStorage data or create demo data
   const storedUser = JSON.parse(localStorage.getItem('valdoUserData'));
-  
+
   if (storedUser && storedUser.email === email) {
     // User exists in localStorage
     userData = storedUser;
@@ -169,11 +350,11 @@ function handleSignUp(event) {
   };
 
   isFirstTimeUser = true;
-  
+
   // Save to localStorage
   saveUserData();
   saveFirstTimeUser();
-  
+
   showScreen('tutorial');
 }
 
@@ -215,29 +396,74 @@ function hideManualLog() {
 
 function submitMealLog(event) {
   event.preventDefault();
+  console.log('Submit meal log function called');
 
   const meal = {
     type: document.getElementById('mealType').value,
     description: document.getElementById('mealDescription').value,
-    calories: parseInt(document.getElementById('mealCalories').value),
-    carbs: document.getElementById('mealCarbs').value ? parseInt(document.getElementById('mealCarbs').value) : 0,
-    protein: document.getElementById('mealProtein').value ? parseInt(document.getElementById('mealProtein').value) : 0,
-    fat: document.getElementById('mealFat').value ? parseInt(document.getElementById('mealFat').value) : 0,
+    calories: parseInt(document.getElementById('mealCalories').value) || 0,
+    carbs: parseInt(document.getElementById('mealCarbs').value) || 0,
+    protein: parseInt(document.getElementById('mealProtein').value) || 0,
+    fat: parseInt(document.getElementById('mealFat').value) || 0,
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    date: new Date().toISOString().split('T')[0] // Store date for filtering
+    date: new Date().toISOString().split('T')[0]
   };
+
+  console.log('Meal to be logged:', meal);
 
   mealsLogged.push(meal);
   saveMeals(); // Save to localStorage
+  console.log('Meals after logging:', mealsLogged);
 
+  // Reset form
   const form = document.getElementById('manualLogForm');
   if (form) form.reset();
   hideManualLog();
 
-  if (isFirstTimeUser && mealsLogged.length === 1) {
-    showScreen('celebration');
-  } else {
+  // Show success modal with meal details
+  const successMessage = `Meal logged successfully!<br><br>
+    <strong>${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}</strong><br>
+    ${meal.description}<br>
+    ${meal.calories} calories | Carbs: ${meal.carbs}g | Protein: ${meal.protein}g | Fat: ${meal.fat}g`;
+
+  showSuccessModal(successMessage);
+  console.log('Success modal shown');
+
+  // Force update dashboard immediately
+  setTimeout(() => {
     updateDashboard();
+    console.log('Dashboard updated after meal log');
+  }, 100);
+
+  if (isFirstTimeUser && mealsLogged.length === 1) {
+    setTimeout(() => {
+      closeSuccessModal();
+      showScreen('celebration');
+    }, 2000);
+  }
+}
+
+function showSuccessModal(message) {
+  const modal = document.getElementById('successModal');
+  const messageElement = document.getElementById('successMessage');
+  if (modal && messageElement) {
+    messageElement.innerHTML = message;
+    modal.classList.add('active');
+    console.log('Success modal activated');
+  } else {
+    console.error('Success modal elements not found');
+  }
+}
+
+function closeSuccessModal() {
+  const modal = document.getElementById('successModal');
+  if (modal) {
+    modal.classList.remove('active');
+    console.log('Success modal closed');
+  }
+
+  // Always navigate to dashboard after closing modal (unless it's first time user)
+  if (!isFirstTimeUser || mealsLogged.length > 1) {
     navigateTo('mainDashboard');
   }
 }
@@ -250,15 +476,21 @@ function completeTutorial() {
 }
 
 function updateDashboard() {
-  if (!userData) return;
+  if (!userData) {
+    console.log('No user data for dashboard update');
+    return;
+  }
 
   const todaysMeals = getTodaysMeals();
+  console.log('Updating dashboard with meals:', todaysMeals);
 
+  // Update user name
   const userName = document.getElementById('userName');
   if (userName) {
     userName.textContent = userData.name.split(' ')[0];
   }
 
+  // Update empowering message
   const messages = [
     "You're doing amazing! Keep up the great work!",
     'Every step counts towards a healthier you!',
@@ -268,17 +500,14 @@ function updateDashboard() {
   ];
   const empoweringMessage = document.getElementById('empoweringMessage');
   if (empoweringMessage) {
-    empoweringMessage.textContent =
-      messages[Math.floor(Math.random() * messages.length)];
+    empoweringMessage.textContent = messages[Math.floor(Math.random() * messages.length)];
   }
 
+  // Update stats
   const stepCount = document.getElementById('stepCount');
   if (stepCount) stepCount.textContent = '8,543';
 
-  const totalCalories = todaysMeals.reduce(
-    (sum, meal) => sum + meal.calories,
-    0
-  );
+  const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const caloriesGained = document.getElementById('caloriesGained');
   if (caloriesGained) caloriesGained.textContent = totalCalories;
 
@@ -290,12 +519,13 @@ function updateDashboard() {
     streakCount.textContent = todaysMeals.length > 0 ? '5' : '0';
   }
 
+  // Update meal log container
   const container = document.getElementById('mealLogContainer');
   if (container) {
     if (todaysMeals.length > 0) {
-      container.innerHTML = '';
+      let mealsHTML = '';
       todaysMeals.forEach((meal) => {
-        container.innerHTML += `
+        mealsHTML += `
           <div class="meal-item">
             <h4>${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)} - ${meal.time}</h4>
             <p>${meal.description}</p>
@@ -305,8 +535,8 @@ function updateDashboard() {
           </div>
         `;
       });
-      container.innerHTML +=
-        '<button class="btn-add-meal" onclick="navigateTo(\'mealLog\')">Log Another Meal</button>';
+      mealsHTML += '<button class="btn-add-meal" onclick="navigateTo(\'mealLog\')">Log Another Meal</button>';
+      container.innerHTML = mealsHTML;
     } else {
       container.innerHTML = `
         <div class="meal-log-empty">
@@ -318,12 +548,18 @@ function updateDashboard() {
     }
   }
 
+  // Update AI feedback
   const aiFeedback = document.getElementById('aiFeedback');
-  if (aiFeedback && todaysMeals.length > 0) {
-    const lastMeal = todaysMeals[todaysMeals.length - 1];
-    aiFeedback.textContent = `Great job logging your ${lastMeal.type}! Your ${lastMeal.calories} calorie meal is well-balanced. Keep up the consistent tracking!`;
+  if (aiFeedback) {
+    if (todaysMeals.length > 0) {
+      const lastMeal = todaysMeals[todaysMeals.length - 1];
+      aiFeedback.textContent = `Great job logging your ${lastMeal.type}! Your ${lastMeal.calories} calorie meal is well-balanced. Keep up the consistent tracking!`;
+    } else {
+      aiFeedback.textContent = "Start logging your meals to get personalized feedback!";
+    }
   }
 
+  // Update progress
   const progress = Math.min((todaysMeals.length / 3) * 100, 100);
   const progressBar = document.getElementById('progressBar');
   if (progressBar) progressBar.style.width = progress + '%';
@@ -334,76 +570,43 @@ function updateDashboard() {
   const progressText = document.getElementById('progressText');
   if (progressText) {
     if (todaysMeals.length >= 3) {
-      progressText.textContent =
-        "Excellent! You've logged all your meals today!";
+      progressText.textContent = "Excellent! You've logged all your meals today!";
     } else {
       progressText.textContent = `${todaysMeals.length}/3 meals logged today. Keep going!`;
     }
   }
 
-  const profileName = document.getElementById('profileName');
-  if (profileName) profileName.textContent = userData.name;
-
-  const profileEmail = document.getElementById('profileEmail');
-  if (profileEmail) profileEmail.textContent = userData.email;
-
-  const profileAge = document.getElementById('profileAge');
-  if (profileAge) profileAge.textContent = userData.age;
-
-  const profileGender = document.getElementById('profileGender');
-  if (profileGender) {
-    profileGender.textContent =
-      userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1);
-  }
-
-  const profileHeight = document.getElementById('profileHeight');
-  if (profileHeight) profileHeight.textContent = userData.height + ' cm';
-
-  const profileWeight = document.getElementById('profileWeight');
-  if (profileWeight) profileWeight.textContent = userData.weight + ' kg';
-
-  const profileHealthStatus = document.getElementById('profileHealthStatus');
-  if (profileHealthStatus) {
-    profileHealthStatus.textContent =
-      userData.healthStatus.charAt(0).toUpperCase() +
-      userData.healthStatus.slice(1).replace('_', ' ');
-  }
-
-  const profileGoal = document.getElementById('profileGoal');
-  if (profileGoal) {
-    profileGoal.textContent = userData.goal
-      .replace('_', ' ')
-      .split(' ')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-  }
-
-  const currentWeight = document.getElementById('currentWeight');
-  if (currentWeight) currentWeight.textContent = userData.weight + ' kg';
-
-  const currentHeight = document.getElementById('currentHeight');
-  if (currentHeight) currentHeight.textContent = userData.height + ' cm';
-
-  const currentBMI = document.getElementById('currentBMI');
-  if (currentBMI) {
-    const bmi = (userData.weight / ((userData.height / 100) ** 2)).toFixed(1);
-    currentBMI.textContent = bmi;
-  }
-
-  const profileAvatar = document.getElementById('profileAvatar');
-  if (profileAvatar) {
-    profileAvatar.textContent = userData.name.charAt(0).toUpperCase();
-  }
+  console.log('Dashboard update completed');
 }
 
 function navigateTo(screenId) {
-  showScreen(screenId);
+  console.log('Navigating to:', screenId);
+  document.querySelectorAll('.screen').forEach((screen) => {
+    screen.classList.remove('active');
+  });
+  const targetScreen = document.getElementById(screenId);
+  if (targetScreen) {
+    targetScreen.classList.add('active');
 
+    // Start camera when camera screen is shown
+    if (screenId === 'cameraScan') {
+      setTimeout(startCamera, 100);
+    } else {
+      // Stop camera when leaving camera screen
+      stopCamera();
+    }
+
+    // Update dashboard when showing main dashboard
+    if (screenId === 'mainDashboard') {
+      setTimeout(updateDashboard, 100);
+    }
+  }
+
+  // Update nav items
   document.querySelectorAll('.nav-item').forEach((item) => {
     item.classList.remove('active');
   });
 
-  // Set the active nav item
   const activeNavItem = document.querySelector(`.nav-item[onclick*="${screenId}"]`);
   if (activeNavItem) {
     activeNavItem.classList.add('active');
