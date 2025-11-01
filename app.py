@@ -16,7 +16,6 @@ CORS(app)
 CRISIS_KEYWORDS = ["suicide", "kill myself", "end my life", "can't go on", "want to die"]
 URGENT_PHYSICAL_KEYWORDS = ["dying", "chest pain", "can't breathe", "severe bleeding", "heart attack", "unconscious",
                             "stab", "shot"]
-EMOTIONAL_DISTRESS_KEYWORDS = ["depressed", "hopeless", "panic", "anxious", "lonely"]
 
 CHAT_SYSTEM_PROMPT = (
     "You are a friendly, empathetic, and professional virtual healthcare support assistant. "
@@ -149,18 +148,6 @@ def chat():
                     "Please call emergency services (911 / 112 / 999) or go to the nearest hospital immediately."
                 ),
                 "source": "emergency"
-            })
-
-    # Emotional distress (non-crisis but concerning)
-    for keyword in EMOTIONAL_DISTRESS_KEYWORDS:
-        if keyword in msg_lower:
-            return jsonify({
-                "reply": (
-                    "💬 It sounds like you're going through a tough time. "
-                    "You're not alone — reaching out to a trusted friend, counselor, or mental health professional can really help. "
-                    "If things feel overwhelming, you can also contact a local helpline for support."
-                ),
-                "source": "distress"
             })
 
     # --- Regular AI Response ---
