@@ -442,20 +442,19 @@
             <p>Your AI Health Coach</p>
           </div>
 
-          <div class="chat-messages" id="chatMessages">
-            <div class="message ai">
-              <p>Hi! I'm Valdo, your AI health coach. How can I help you today?</p>
+          <div class="chat-messages" id="chat">
+            <div class="msg bot">
+              <div class="bubble">Hi! I'm Valdo, your AI health coach. How can I help you today?</div>
             </div>
           </div>
 
           <div class="chat-input-container">
             <input
               type="text"
-              id="chatInput"
-              placeholder="Ask me anything..."
-              onkeypress="handleChatEnter(event)"
+              id="userInput"
+              placeholder="Ask me anything about health..."
             />
-            <button onclick="sendMessage()">➤</button>
+            <button id="sendBtn">➤</button>
           </div>
         </div>
 

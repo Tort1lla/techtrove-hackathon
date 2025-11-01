@@ -1,6 +1,5 @@
 import os
-from openai import OpenAI, api_key
-import requests
+from openai import OpenAI
 import random
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS

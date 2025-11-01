@@ -47,7 +47,66 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => showScreen('welcome3'), 6000);
     setTimeout(() => showScreen('welcomeFinal'), 9000);
   }
+
+  // Initialize AI Coach chat functionality
+  initializeAIChat();
 });
+
+function initializeAIChat() {
+  const chatBox = document.getElementById("chat");
+  const input = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  function appendMessage(text, who = "bot") {
+    const msg = document.createElement("div");
+    msg.className = `msg ${who}`;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerText = text;
+    msg.appendChild(bubble);
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendMessage(text, "user");
+    input.value = "";
+    appendMessage("Thinking...", "bot");
+
+    try {
+      const response = await fetch('http://localhost:5000/chat', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
+
+      const data = await response.json();
+      chatBox.lastChild.remove(); // remove "Thinking..."
+
+      if (data.error) {
+        appendMessage("Error: " + data.error, "bot");
+      } else {
+        appendMessage(data.reply, "bot");
+      }
+    } catch (error) {
+      chatBox.lastChild.remove();
+      appendMessage("Network error. Check if the server is running on localhost:5000", "bot");
+      console.error(error);
+    }
+  }
+
+  if (sendBtn) {
+    sendBtn.addEventListener("click", sendMessage);
+  }
+  if (input) {
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+  }
+}
 
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach((screen) => {
@@ -349,48 +408,6 @@ function navigateTo(screenId) {
   if (activeNavItem) {
     activeNavItem.classList.add('active');
   }
-}
-
-function handleChatEnter(event) {
-  if (event.key === 'Enter') {
-    sendMessage();
-  }
-}
-
-function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const message = input.value.trim();
-
-  if (!message) return;
-
-  const chatMessages = document.getElementById('chatMessages');
-  chatMessages.innerHTML += `
-    <div class="message user">
-      <p>${message}</p>
-    </div>
-  `;
-
-  input.value = '';
-
-  setTimeout(() => {
-    const responses = [
-      "That's a great question! Based on your profile, I recommend focusing on balanced meals with lean proteins and complex carbs.",
-      'Your progress is looking good! Keep logging your meals consistently for better insights.',
-      'Remember to stay hydrated! Aim for at least 8 glasses of water per day.',
-      "I notice you're working towards your health goals. Would you like some personalized meal suggestions?",
-      'Great work today! Your calorie balance is on track. Keep it up!',
-    ];
-
-    chatMessages.innerHTML += `
-      <div class="message ai">
-        <p>${responses[Math.floor(Math.random() * responses.length)]}</p>
-      </div>
-    `;
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }, 1000);
-
-  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function handleLogout() {
