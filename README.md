@@ -9,8 +9,7 @@ Valdo is powered by Meta's Llama 3.1-8B and OpenAI's GPT 5 Mini to ensure **spee
 - [Features](#key-features)
 - [AI Tools](#ai-tools)
 - [Tech Stack](#tech-stack)
-- [Contributing](#contributing)
-- [License](#license)
+
 
 ### Overview
 Valdo is a web with straightforward features to boost user's experience.  
