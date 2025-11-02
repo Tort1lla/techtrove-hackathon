@@ -22,7 +22,7 @@ Only features essential to develop a healthy lifestyle and "prevent" sickness ar
 - Llama 3.1-8B powered AI health coach.
 - GPT 5 Mini powered meal logger
 - User daily status recording system.
-- Llama 3.1-8b powered user status analyser.
+- Llama 3.1-8B powered user status analyser.
 
 ### AI Tools
 Web development: [Claude](https://claude.ai/new), [ChatGPT](https://chatgpt.com), [Deepseek](https://www.deepseek.com), [Bolt](https://bolt.new)  
