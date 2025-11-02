@@ -14,7 +14,8 @@ CORS(app)
 
 # --- Emergency / Crisis Handling ---
 CRISIS_KEYWORDS = ["suicide", "kill myself", "end my life", "can't go on", "want to die"]
-URGENT_PHYSICAL_KEYWORDS = ["dying", "chest pain", "can't breathe", "severe bleeding", "heart attack", "unconscious", "stab", "shot"]
+URGENT_PHYSICAL_KEYWORDS = ["dying", "chest pain", "can't breathe", "severe bleeding",
+                            "heart attack", "unconscious", "stab", "shot"]
 
 CHAT_SYSTEM_PROMPT = (
     "You are a friendly, empathetic, and professional virtual healthcare support assistant. "
