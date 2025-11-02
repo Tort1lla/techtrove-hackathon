@@ -42,9 +42,11 @@ Fact checking and research: [Perplexity](https://www.perplexity.ai)
 
 ### How to Run
 1. Clone the repository
-2. Install the neccessary Python [libraries](#library-used)
-3. Run the code
-5. Have fun testing the website on a local host!
+2. Create your own API Key from Open Router and Hugging Face
+3. Paste your API keys in .env in their relative places
+4. Install the neccessary Python [libraries](#library-used)
+5. Run the code
+6. Have fun testing the website on a local host!
 
 ### Debug Steps
-1. If localhost:5000 isn't found, try another IDE (PyCharm)
+1. If localhost:5000 isn't found, try with another IDE (PyCharm)
