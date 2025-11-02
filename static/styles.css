@@ -470,7 +470,7 @@ body {
 
 .ai-feedback-card {
   background: var(--secondary-gradient);
-  color: var(--background-white);
+  color: black;
   padding: 20px;
   border-radius: var(--border-radius);
   margin-bottom: 20px;
@@ -818,6 +818,13 @@ body {
   border-left: 4px solid var(--primary-color);
 }
 
+
+.current-stats
+{
+  margin-bottom: 80px;
+}
+
+
 .metric-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
@@ -951,6 +958,7 @@ body {
   font-size: 1.1rem;
   cursor: pointer;
   margin-top: 20px;
+  margin-bottom: 100px;
   transition: var(--transition-fast);
 }
 
@@ -1404,13 +1412,6 @@ body {
   font-weight: 600;
 }
 
-.health-summary {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: var(--border-radius-small);
-  border-left: 4px solid var(--primary-color);
-}
-
 /* Step counter animation */
 @keyframes stepPulse {
   0% { transform: scale(1); }
@@ -1623,4 +1624,3 @@ a:focus {
     -webkit-text-size-adjust: 100%;
   }
 }
-

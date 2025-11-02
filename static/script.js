@@ -656,6 +656,15 @@ function updateManualLogForm() {
 function submitMealLog(event) {
   event.preventDefault();
   console.log('Submit meal log function called');
+  console.log({
+    mealType: document.getElementById('mealType'),
+    mealDescription: document.getElementById('mealDescription'),
+    mealCalories: document.getElementById('mealCalories'),
+    mealCarbs: document.getElementById('mealCarbs'),
+    mealProtein: document.getElementById('mealProtein'),
+    mealFat: document.getElementById('mealFat'),
+    mealSugar: document.getElementById('mealSugar')
+  });
 
   const meal = {
     type: document.getElementById('mealType').value,
@@ -676,7 +685,7 @@ function submitMealLog(event) {
   console.log('Meals after logging:', mealsLogged);
 
   // Reset form
-  const form = document.getElementById('manualLogForm');
+  const form = document.getElementById('manualForm');
   if (form) form.reset();
   hideManualLog();
 
@@ -922,6 +931,7 @@ async function updateMetricsScreen() {
   updateMetricElement('Average Steps', avgSteps.toLocaleString());
   updateMetricElement('Average Calories In', avgDailyCalories.toLocaleString());
   updateMetricElement('Average Calories Out', Math.round(avgSteps * 0.04).toLocaleString());
+  updateMetricElement('Average Sugar In Status', 'unlogged')
 
   // Add new metrics
   updateMetricElement('Average Sugar Intake', `${avgDailySugar}g`);
@@ -929,31 +939,17 @@ async function updateMetricsScreen() {
   updateMetricElement('Average Protein', `${avgDailyProtein}g`);
   updateMetricElement('Average Fat', `${avgDailyFat}g`);
 
-  // Add sugar level indicator
-  const sugarElement = document.querySelector('.profile-item span:contains("Average Sugar Intake")');
-  if (sugarElement) {
-    const sugarValue = sugarElement.nextElementSibling;
-    if (avgDailySugar > 50) {
-      sugarValue.classList.add('sugar-high');
-    } else if (avgDailySugar > 25) {
-      sugarValue.classList.add('sugar-moderate');
-    } else {
-      sugarValue.classList.add('sugar-low');
-    }
-  }
+  // Update sugar level indicator
+  updateSugarLevelIndicator(avgDailySugar);
 
-  // Update goals progress with actual data
-  const stepGoal = 10000;
-  const stepProgress = Math.min((stepCount / stepGoal) * 100, 100);
+  // Update meals progress with actual data
   const mealGoal = 3;
   const mealProgress = Math.min((todaysMeals.length / mealGoal) * 100, 100);
 
   // Update progress bars
-  updateProgressBar('.progress-bar-container:first-child .progress-bar', stepProgress);
   updateProgressBar('.progress-bar-container:last-child .progress-bar', mealProgress);
 
   // Update progress labels
-  updateProgressLabel('.progress-bar-container:first-child', `Steps: ${stepCount.toLocaleString()} / ${stepGoal.toLocaleString()}`);
   updateProgressLabel('.progress-bar-container:last-child', `Meals: ${todaysMeals.length} / ${mealGoal}`);
 
   // Update profile screen
@@ -969,7 +965,6 @@ async function updateMetricsScreen() {
     avgDailyCarbs,
     avgDailyProtein,
     avgDailyFat,
-    stepGoalProgress: stepProgress,
     mealGoalProgress: mealProgress,
     bmi: userData.weight && userData.height ? (userData.weight / ((userData.height / 100) ** 2)).toFixed(1) : null,
     healthStatus: userData.healthStatus,
@@ -977,6 +972,31 @@ async function updateMetricsScreen() {
   });
 }
 
+// Helper class to update Sugar Lvl Indicator
+function updateSugarLevelIndicator(avgDailySugar) {
+  // Find all profile items and look for the one containing "Average Sugar Intake"
+  const profileItems = document.querySelectorAll('.profile-item');
+
+  profileItems.forEach(item => {
+    const span = item.querySelector('span');
+    if (span && span.textContent.includes('Average Sugar In Status')) {
+      const valueElement = span.nextElementSibling;
+      if (valueElement) {
+        // Remove existing sugar classes
+        valueElement.classList.remove('sugar-high', 'sugar-moderate', 'sugar-low');
+
+        // Add appropriate class based on sugar level
+        if (avgDailySugar > 50) {
+          valueElement.classList.add('sugar-high');
+        } else if (avgDailySugar > 25) {
+          valueElement.classList.add('sugar-moderate');
+        } else {
+          valueElement.classList.add('sugar-low');
+        }
+      }
+    }
+  });
+}
 // Helper function to update metric elements
 function updateMetricElement(label, value) {
   const elements = document.querySelectorAll('.profile-item span');
@@ -1020,7 +1040,7 @@ function updateProgressLabel(containerSelector, text) {
 // New function for overall AI insight
 async function updateOverallAIInsight(metrics) {
   const insightElement = document.getElementById('overallInsightText');
-  if (!insightElement) return;
+  if (!insightElement) {console.log("insight element not found"); return};
 
   insightElement.textContent = "Analyzing your health patterns...";
 
@@ -1034,7 +1054,6 @@ Average Daily Sugar: ${metrics.avgDailySugar}g
 Average Daily Carbs: ${metrics.avgDailyCarbs}g
 Average Daily Protein: ${metrics.avgDailyProtein}g
 Average Daily Fat: ${metrics.avgDailyFat}g
-Step Goal Progress: ${Math.round(metrics.stepGoalProgress)}%
 Meal Logging Consistency: ${Math.round(metrics.mealGoalProgress)}%
 BMI: ${metrics.bmi || 'Not available'}
 Health Status: ${metrics.healthStatus}
@@ -1043,13 +1062,16 @@ Main Goal: ${metrics.mainGoal}
 Provide an overall assessment of lifestyle habits, highlight strengths and areas for improvement, and give one key recommendation. Be encouraging but honest. Focus on patterns and long-term health.`;
 
   try {
+    console.log("Try sending...")
     const response = await fetch('http://localhost:5000/chat', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: prompt })
     });
 
+
     const data = await response.json();
+    console.log("responsed")
     insightElement.textContent = data.reply || "Your consistent tracking shows great commitment to health! Keep maintaining balanced nutrition and regular activity for long-term wellness.";
     console.log(data.reply)
   } catch (error) {
