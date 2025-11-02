@@ -9,7 +9,9 @@ Valdo is powered by Meta's Llama 3.1-8B and OpenAI's GPT 5 Mini to ensure **spee
 - [Features](#key-features)
 - [AI Tools](#ai-tools)
 - [Tech Stack](#tech-stack)
-
+- [Libraries](#library-used)
+- [Running Steps](#how-to-run)
+- [Debug Steps](#debug-steps)
 
 ### Overview
 Valdo is a web with straightforward features to boost user's experience.  
@@ -29,3 +31,20 @@ Fact checking and research: [Perplexity](https://www.perplexity.ai)
 ### Tech Stack
 - Front-end: JS, HTML, CSS
 - Back-end: Python
+
+### Library Used
+- os
+- openai
+- random
+- flask
+- flask_cors
+- dotenv
+
+### How to Run
+1. Clone the repository
+2. Install the neccessary Python [libraries](#library-used)
+3. Run the code
+5. Have fun testing the website on a local host!
+
+### Debug Steps
+1. If localhost:5000 isn't found, try another IDE (PyCharm)
