@@ -30,696 +30,731 @@
         </div>
       </div>
 
-      <div id="welcome3" class="screen">
-        <div class="welcome-slide">
-          <h1>🌟</h1>
-          <h1>You're Not Alone</h1>
-          <p>Our AI coach is here to support you every step of the way</p>
-        </div>
+    <div id="welcome3" class="screen">
+      <div class="welcome-slide">
+        <h1>🌟</h1>
+        <h1>You're Not Alone</h1>
+        <p>Our AI coach is here to support you every step of the way</p>
       </div>
+    </div>
 
-      <div id="welcomeFinal" class="screen">
-        <div class="welcome-slide welcome-final">
-          <div class="logo">💙</div>
-          <h1>Welcome to Valdo</h1>
-          <p>Your personal health companion</p>
-          <button class="btn-primary" onclick="showScreen('authChoice')">
-            Get Started
+    <div id="welcomeFinal" class="screen">
+      <div class="welcome-slide welcome-final">
+        <div class="logo">💙</div>
+        <h1>Welcome to Valdo</h1>
+        <p>Your personal health companion</p>
+        <!-- Inline onclick used — okay, but consider adding role/aria attributes if this is critical for accessibility -->
+        <button class="btn-primary" onclick="showScreen('authChoice')">
+          Get Started
+        </button>
+      </div>
+    </div>
+
+    <div id="authChoice" class="screen">
+      <div class="auth-screen">
+        <h2>Let's Begin!</h2>
+        <p class="subtitle">Join thousands improving their health</p>
+        <button class="btn-block btn-primary" onclick="showScreen('signup')">
+          Sign Up
+        </button>
+        <!-- using text-link as clickable <p> is acceptable for SPAs, but for accessibility prefer <button> or <a href="#"> -->
+        <p class="text-link" onclick="showScreen('signin')">
+          Already have an account? Sign In
+        </p>
+      </div>
+    </div>
+
+    <div id="signin" class="screen">
+      <div class="auth-screen">
+        <h2>Welcome Back!</h2>
+        <p class="subtitle">Sign in to continue your journey</p>
+        <!--
+          FORM NOTES:
+          - onsubmit used for SPA. No action attribute (fine for JS-first apps).
+          - Labels are not linked via for="..." to inputs. For better accessibility add for attributes matching input ids.
+        -->
+        <form onsubmit="handleSignIn(event)">
+          <div class="form-group">
+            <label>Email or Username</label>
+            <!-- Consider: <label for="signinEmail">Email or Username</label> -->
+            <input type="text" id="signinEmail" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <!-- Consider: <label for="signinPassword">Password</label> -->
+            <input type="password" id="signinPassword" required />
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="rememberMe" />
+            <label for="rememberMe">Remember me</label>
+          </div>
+          <button type="submit" class="btn-block btn-primary">
+            Sign In
           </button>
-        </div>
+        </form>
+        <p class="text-link" onclick="showScreen('signup')">
+          Don't have an account? Sign Up
+        </p>
       </div>
+    </div>
 
-      <div id="authChoice" class="screen">
-        <div class="auth-screen">
-          <h2>Let's Begin!</h2>
-          <p class="subtitle">Join thousands improving their health</p>
-          <button class="btn-block btn-primary" onclick="showScreen('signup')">
-            Sign Up
-          </button>
-          <p class="text-link" onclick="showScreen('signin')">
-            Already have an account? Sign In
-          </p>
-        </div>
+    <div id="signup" class="screen">
+      <div class="auth-screen">
+        <h2>Create Account</h2>
+        <p class="subtitle">Start your health journey today</p>
+        <!--
+          FORM NOTES:
+          - Password has minlength=8 (good),
+          - Age / Height / Weight have min attributes but no max or step — consider setting realistic bounds.
+          - Labels should ideally use for="..." to associate with inputs.
+        -->
+        <form onsubmit="handleSignUp(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="signupName" required />
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <!-- Consider adding max (e.g., max="120") and step if fractional ages are allowed -->
+            <input type="number" id="signupAge" required min="1" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="signupGender" required>
+              <option value="">Select...</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <input type="number" id="signupHeight" required min="1" />
+          </div>
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="signupWeight" required min="1" />
+          </div>
+          <div class="form-group">
+            <label>Current Health Status</label>
+            <select id="signupHealthStatus" required>
+              <option value="">Select...</option>
+              <option value="healthy">Healthy</option>
+              <option value="prediabetic">Pre-diabetic</option>
+              <option value="diabetic">Diabetic</option>
+              <option value="other">Other condition</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Main Goal</label>
+            <select id="signupGoal" required>
+              <option value="">Select...</option>
+              <option value="healthy_lifestyle">Healthy Lifestyle</option>
+              <option value="manage_diabetes">Manage Diabetes</option>
+              <option value="weight_loss">Weight Loss</option>
+              <option value="fitness">Improve Fitness</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="signupEmail" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="signupPassword"
+              required
+              minlength="8"
+            />
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="termsCheckbox" required />
+            <label for="termsCheckbox"
+              >I agree to Terms and Conditions</label
+            >
+          </div>
+          <button type="submit" class="btn-block btn-primary">Sign Up</button>
+        </form>
+        <p class="text-link" onclick="showScreen('signin')">
+          Already have an account? Sign In
+        </p>
       </div>
+    </div>
 
-      <div id="signin" class="screen">
-        <div class="auth-screen">
-          <h2>Welcome Back!</h2>
-          <p class="subtitle">Sign in to continue your journey</p>
-          <form onsubmit="handleSignIn(event)">
-            <div class="form-group">
-              <label>Email or Username</label>
-              <input type="text" id="signinEmail" required />
-            </div>
-            <div class="form-group">
-              <label>Password</label>
-              <input type="password" id="signinPassword" required />
-            </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="rememberMe" />
-              <label for="rememberMe">Remember me</label>
-            </div>
-            <button type="submit" class="btn-block btn-primary">
-              Sign In
-            </button>
-          </form>
-          <p class="text-link" onclick="showScreen('signup')">
-            Don't have an account? Sign Up
-          </p>
-        </div>
+    <div id="tutorial" class="screen">
+      <div class="tutorial">
+        <div class="tutorial-icon">📝</div>
+        <h2>Let's Start Logging!</h2>
+        <p>
+          Track your meals to get personalized insights about your health.
+          Simply take a photo or manually enter your food.
+        </p>
+        <button class="btn-primary" onclick="navigateTo('mealLog')">
+          Log My First Meal
+        </button>
       </div>
+    </div>
 
-      <div id="signup" class="screen">
-        <div class="auth-screen">
-          <h2>Create Account</h2>
-          <p class="subtitle">Start your health journey today</p>
-          <form onsubmit="handleSignUp(event)">
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" id="signupName" required />
-            </div>
-            <div class="form-group">
-              <label>Age</label>
-              <input type="number" id="signupAge" required min="1" />
-            </div>
-            <div class="form-group">
-              <label>Gender</label>
-              <select id="signupGender" required>
-                <option value="">Select...</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Height (cm)</label>
-              <input type="number" id="signupHeight" required min="1" />
-            </div>
-            <div class="form-group">
-              <label>Weight (kg)</label>
-              <input type="number" id="signupWeight" required min="1" />
-            </div>
-            <div class="form-group">
-              <label>Current Health Status</label>
-              <select id="signupHealthStatus" required>
-                <option value="">Select...</option>
-                <option value="healthy">Healthy</option>
-                <option value="prediabetic">Pre-diabetic</option>
-                <option value="diabetic">Diabetic</option>
-                <option value="other">Other condition</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Main Goal</label>
-              <select id="signupGoal" required>
-                <option value="">Select...</option>
-                <option value="healthy_lifestyle">Healthy Lifestyle</option>
-                <option value="manage_diabetes">Manage Diabetes</option>
-                <option value="weight_loss">Weight Loss</option>
-                <option value="fitness">Improve Fitness</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" id="signupEmail" required />
-            </div>
-            <div class="form-group">
-              <label>Password</label>
+    <div id="celebration" class="screen">
+      <div class="tutorial celebration">
+        <div class="celebration-icon">🎉</div>
+        <h2>Amazing!</h2>
+        <p>
+          You've logged your first meal! Keep it up and watch your health
+          improve day by day.
+        </p>
+        <button class="btn-primary" onclick="completeTutorial()">
+          Continue to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Updated Weight Input Modal -->
+    <div id="weightModal" class="modal">
+      <div class="modal-content weight-modal">
+        <div class="modal-header">
+          <h3>Good Morning! 🌅</h3>
+        </div>
+        <div class="modal-body">
+          <p>Would you like to update your metrics?</p>
+          <div class="input-row">
+            <div class="input-group">
+              <label for="morningWeight">Weight (kg)</label>
+              <!-- placeholder example; consider adding step="0.1" (already present below) and min/max -->
               <input
-                type="password"
-                id="signupPassword"
-                required
-                minlength="8"
+                type="number"
+                id="morningWeight"
+                placeholder="e.g., 75.5"
+                step="0.1"
               />
             </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="termsCheckbox" required />
-              <label for="termsCheckbox"
-                >I agree to Terms and Conditions</label
-              >
-            </div>
-            <button type="submit" class="btn-block btn-primary">Sign Up</button>
-          </form>
-          <p class="text-link" onclick="showScreen('signin')">
-            Already have an account? Sign In
-          </p>
-        </div>
-      </div>
-
-      <div id="tutorial" class="screen">
-        <div class="tutorial">
-          <div class="tutorial-icon">📝</div>
-          <h2>Let's Start Logging!</h2>
-          <p>
-            Track your meals to get personalized insights about your health.
-            Simply take a photo or manually enter your food.
-          </p>
-          <button class="btn-primary" onclick="navigateTo('mealLog')">
-            Log My First Meal
-          </button>
-        </div>
-      </div>
-
-      <div id="celebration" class="screen">
-        <div class="tutorial celebration">
-          <div class="celebration-icon">🎉</div>
-          <h2>Amazing!</h2>
-          <p>
-            You've logged your first meal! Keep it up and watch your health
-            improve day by day.
-          </p>
-          <button class="btn-primary" onclick="completeTutorial()">
-            Continue to Dashboard
-          </button>
-        </div>
-      </div>
-
-      <!-- Updated Weight Input Modal -->
-      <div id="weightModal" class="modal">
-        <div class="modal-content weight-modal">
-          <div class="modal-header">
-            <h3>Good Morning! 🌅</h3>
-          </div>
-          <div class="modal-body">
-            <p>Would you like to update your metrics?</p>
-            <div class="input-row">
-              <div class="input-group">
-                <label for="morningWeight">Weight (kg)</label>
-                <input
-                  type="number"
-                  id="morningWeight"
-                  placeholder="e.g., 75.5"
-                  step="0.1"
-                />
-              </div>
-              <div class="input-group">
-                <label for="morningHeight">Height (cm)</label>
-                <input type="number" id="morningHeight" placeholder="e.g., 175" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn-skip" onclick="skipWeightInput()">Skip</button>
-            <button class="btn-save" onclick="saveWeightInput()">Save</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="mainDashboard" class="screen">
-        <div class="main-page">
-          <div class="header">
-            <h1>Hi <span id="userName">there</span>! 💪</h1>
-            <p id="empoweringMessage">
-              You're doing amazing! Keep up the great work!
-            </p>
-          </div>
-
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="icon">👟</div>
-              <div class="value" id="stepCount">0</div>
-              <div class="label">Steps Today</div>
-            </div>
-            <div class="stat-card">
-              <div class="icon">🍎</div>
-              <div class="value" id="caloriesGained">0</div>
-              <div class="label">Calories In</div>
-            </div>
-            <div class="stat-card">
-              <div class="icon">🔥</div>
-              <div class="value" id="caloriesBurnt">0</div>
-              <div class="label">Calories Out</div>
-            </div>
-            <div class="stat-card">
-              <div class="icon">🎯</div>
-              <div class="value" id="streakCount">0</div>
-              <div class="label">Day Streak</div>
-            </div>
-          </div>
-
-          <div class="section">
-            <h3 class="section-title">Today's Meals</h3>
-            <div id="mealLogContainer" class="meal-log-card">
-              <div class="meal-log-empty">
-                <div class="icon">🍽</div>
-                <p>No meals logged yet today</p>
-                <button class="btn-add-meal" onclick="navigateTo('mealLog')">
-                  Log Your First Meal
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="section">
-            <div id="aiFeedbackContainer" class="ai-feedback-card">
-              <h3>💡 Valdo's Insight</h3>
-              <p id="aiFeedback">
-                Start logging your meals to get personalized feedback!
-              </p>
-            </div>
-          </div>
-
-          <div class="section">
-            <div class="ai-coach-tile" onclick="navigateTo('aiCoach')">
-              <h3>🤖 Chat with Valdo</h3>
-              <p>Get personalized health advice anytime</p>
-            </div>
-          </div>
-
-          <div class="section">
-            <div class="progress-card">
-              <h3>Health Plan Progress</h3>
-              <p id="progressText">
-                Start your journey by logging meals and tracking activity
-              </p>
-              <div class="progress-bar-container">
-                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-              </div>
-              <p
-                style="
-                  text-align: right;
-                  font-size: 0.9rem;
-                  color: #666;
-                  margin-top: 5px;
-                "
-              >
-                <span id="progressPercent">0</span>%
-              </p>
+            <div class="input-group">
+              <label for="morningHeight">Height (cm)</label>
+              <input type="number" id="morningHeight" placeholder="e.g., 175" />
             </div>
           </div>
         </div>
-
-        <div class="nav-bar">
-          <div class="nav-item active" onclick="navigateTo('mainDashboard')">
-            <div class="icon">🏠</div>
-            <div class="label">Home</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('aiCoach')">
-            <div class="icon">🤖</div>
-            <div class="label">AI Coach</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('metrics')">
-            <div class="icon">📊</div>
-            <div class="label">Metrics</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('mealLog')">
-            <div class="icon">🍽</div>
-            <div class="label">Meal Log</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('profile')">
-            <div class="icon">👤</div>
-            <div class="label">Profile</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="mealLog" class="screen">
-        <div class="meal-log-screen">
-          <h2>Log Your Meal</h2>
-          <p style="color: #666; margin-top: 10px">
-            Choose how you'd like to log your meal
-          </p>
-
-          <div id="mealLogOptions" class="meal-log-options">
-            <div class="option-card" onclick="showManualLog()">
-              <div class="icon">✏</div>
-              <h3>Manual Entry</h3>
-              <p>Enter meal details manually</p>
-            </div>
-            <div class="option-card" onclick="navigateTo('cameraScan')">
-              <div class="icon">📸</div>
-              <h3>Scan Nutrition Label</h3>
-              <p>Take photo of nutrition facts</p>
-            </div>
-          </div>
-
-          <div id="manualLogForm" class="manual-log-form">
-            <form onsubmit="submitMealLog(event)">
-              <div class="form-group">
-                <label>Meal Type</label>
-                <select id="mealType" required>
-                  <option value="">Select...</option>
-                  <option value="breakfast">Breakfast</option>
-                  <option value="lunch">Lunch</option>
-                  <option value="dinner">Dinner</option>
-                  <option value="snack">Snack</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Food Description</label>
-                <input
-                  type="text"
-                  id="mealDescription"
-                  placeholder="e.g., Grilled chicken with rice"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label>Calories</label>
-                <input
-                  type="number"
-                  id="mealCalories"
-                  placeholder="e.g., 450"
-                  required
-                  min="0"
-                />
-              </div>
-              <div class="form-group">
-                <label>Carbs (g)</label>
-                <input
-                  type="number"
-                  id="mealCarbs"
-                  placeholder="e.g., 45"
-                  min="0"
-                />
-              </div>
-              <div class="form-group">
-                <label>Protein (g)</label>
-                <input
-                  type="number"
-                  id="mealProtein"
-                  placeholder="e.g., 30"
-                  min="0"
-                />
-              </div>
-              <div class="form-group">
-                <label>Fat (g)</label>
-                <input
-                  type="number"
-                  id="mealFat"
-                  placeholder="e.g., 15"
-                  min="0"
-                />
-              </div>
-              <button type="submit" class="btn-submit">Log Meal</button>
-              <button type="button" class="btn-back" onclick="hideManualLog()">
-                Back
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div class="nav-bar">
-          <div class="nav-item" onclick="navigateTo('mainDashboard')">
-            <div class="icon">🏠</div>
-            <div class="label">Home</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('aiCoach')">
-            <div class="icon">🤖</div>
-            <div class="label">AI Coach</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('metrics')">
-            <div class="icon">📊</div>
-            <div class="label">Metrics</div>
-          </div>
-          <div class="nav-item active" onclick="navigateTo('mealLog')">
-            <div class="icon">🍽</div>
-            <div class="label">Meal Log</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('profile')">
-            <div class="icon">👤</div>
-            <div class="label">Profile</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="successModal" class="modal">
-        <div class="modal-content success-modal">
-          <div class="modal-header">
-            <div class="success-icon">✅</div>
-            <h3>Success!</h3>
-          </div>
-          <div class="modal-body">
-            <p id="successMessage" class="success-details">Meal logged successfully!</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn-primary" onclick="closeSuccessModal()">Continue to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
-       <!-- Updated Camera Scan Screen -->
-      <div id="cameraScan" class="screen">
-        <div class="camera-scan-screen">
-          <h2>Scan Nutrition Label</h2>
-          <p style="color: #666; margin-top: 10px; text-align: center;">
-            Take a clear photo of the nutrition facts label
-          </p>
-
-          <div class="camera-container">
-            <video id="cameraPreview" autoplay playsinline></video>
-            <canvas id="photoCanvas" style="display: none;"></canvas>
-
-            <div class="camera-controls">
-              <button id="captureBtn" class="btn-capture" onclick="capturePhoto()">
-                📸
-              </button>
-              <button class="btn-switch" onclick="switchCamera()">
-                🔄
-              </button>
-            </div>
-          </div>
-
-          <div id="scanResult" class="scan-result" style="display: none;">
-            <h3>✅ Scan Successful!</h3>
-            <p style="color: #666; margin-bottom: 15px;">We found these nutrition facts:</p>
-            <div id="nutritionData" class="nutrition-data">
-              <!-- Nutrition data will be displayed here -->
-            </div>
-            <div class="scan-actions">
-              <button class="btn-retry" onclick="retryScan()">Retry Scan</button>
-              <button class="btn-confirm" onclick="confirmScan()">Confirm & Log Meal</button>
-            </div>
-          </div>
-
-          <div id="scanError" class="scan-error" style="display: none;">
-            <div class="error-icon">⚠️</div>
-            <h3>Scan Failed</h3>
-            <p id="errorMessage">Could not read nutrition facts. Please try again.</p>
-            <button class="btn-retry" onclick="retryScan()">Try Again</button>
-          </div>
-
-          <div class="camera-instructions">
-            <h4>📋 Instructions:</h4>
-            <ul>
-              <li>Ensure good lighting</li>
-              <li>Position label clearly in frame</li>
-              <li>Avoid glare and shadows</li>
-              <li>Make sure text is readable</li>
-            </ul>
-          </div>
-
-          <button class="btn-back" onclick="navigateTo('mealLog')" style="margin-top: 20px;">
-            ← Back to Meal Log
-          </button>
-        </div>
-      </div>
-
-      <div id="aiCoach" class="screen">
-        <div class="ai-coach-screen">
-          <div class="chat-header">
-            <h2>Chat with Valdo 🤖</h2>
-            <p>Your AI Health Coach</p>
-          </div>
-
-          <div class="chat-messages" id="chat">
-            <div class="msg bot">
-              <div class="bubble">Hi! I'm Valdo, your AI health coach. How can I help you today?</div>
-            </div>
-          </div>
-
-          <div class="chat-input-container">
-            <input
-              type="text"
-              id="userInput"
-              placeholder="Ask me anything about health..."
-            />
-            <button id="sendBtn">➤</button>
-          </div>
-        </div>
-
-        <div class="nav-bar">
-          <div class="nav-item" onclick="navigateTo('mainDashboard')">
-            <div class="icon">🏠</div>
-            <div class="label">Home</div>
-          </div>
-          <div class="nav-item active" onclick="navigateTo('aiCoach')">
-            <div class="icon">🤖</div>
-            <div class="label">AI Coach</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('metrics')">
-            <div class="icon">📊</div>
-            <div class="label">Metrics</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('mealLog')">
-            <div class="icon">🍽</div>
-            <div class="label">Meal Log</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('profile')">
-            <div class="icon">👤</div>
-            <div class="label">Profile</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="metrics" class="screen">
-        <div class="metrics-screen">
-          <h2>Your Health Metrics</h2>
-          <p style="color: #666; margin-top: 10px; margin-bottom: 20px">
-            Track your progress over time
-          </p>
-
-          <div class="metric-card">
-            <h3>📊 Weekly Summary</h3>
-            <p style="margin: 15px 0; color: #666">
-              Average daily metrics this week
-            </p>
-            <div class="profile-item">
-              <span>Average Steps</span>
-              <strong>7,543</strong>
-            </div>
-            <div class="profile-item">
-              <span>Average Calories In</span>
-              <strong>2,150</strong>
-            </div>
-            <div class="profile-item">
-              <span>Average Calories Out</span>
-              <strong>2,340</strong>
-            </div>
-            <div id="overallHealthSummary" class="health-summary">
-              <p style="color: #666; margin: 15px 0">Your long-term health trends and patterns</p>
-            </div>
-          </div>
-
-          <div class="metric-card">
-            <h3>💪 Current Stats</h3>
-            <div class="profile-item">
-              <span>Weight</span>
-              <strong id="currentWeight">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>Height</span>
-              <strong id="currentHeight">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>BMI</span>
-              <strong id="currentBMI">--</strong>
-            </div>
-          </div>
-
-          <div class="metric-card">
-            <h3>🎯 Goals Progress</h3>
-            <div style="margin-top: 15px">
-              <p style="color: #666; margin-bottom: 10px">Daily Step Goal</p>
-              <div class="progress-bar-container">
-                <div class="progress-bar" style="width: 85%"></div>
-              </div>
-              <p
-                style="
-                  text-align: right;
-                  font-size: 0.9rem;
-                  color: #666;
-                  margin-top: 5px;
-                "
-              >
-                8,543 / 10,000 steps
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="nav-bar">
-          <div class="nav-item" onclick="navigateTo('mainDashboard')">
-            <div class="icon">🏠</div>
-            <div class="label">Home</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('aiCoach')">
-            <div class="icon">🤖</div>
-            <div class="label">AI Coach</div>
-          </div>
-          <div class="nav-item active" onclick="navigateTo('metrics')">
-            <div class="icon">📊</div>
-            <div class="label">Metrics</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('mealLog')">
-            <div class="icon">🍽</div>
-            <div class="label">Meal Log</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('profile')">
-            <div class="icon">👤</div>
-            <div class="label">Profile</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="profile" class="screen">
-        <div class="profile-screen">
-          <div class="profile-header">
-            <div class="profile-avatar" id="profileAvatar">👤</div>
-            <h2 id="profileName">User Name</h2>
-            <p id="profileEmail" style="color: #666">user@example.com</p>
-          </div>
-
-          <div class="profile-section">
-            <h3 style="margin-bottom: 15px">Personal Information</h3>
-            <div class="profile-item">
-              <span>Age</span>
-              <strong id="profileAge">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>Gender</span>
-              <strong id="profileGender">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>Height</span>
-              <strong id="profileHeight">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>Weight</span>
-              <strong id="profileWeight">--</strong>
-            </div>
-          </div>
-
-          <div class="profile-section">
-            <h3 style="margin-bottom: 15px">Health Information</h3>
-            <div class="profile-item">
-              <span>Health Status</span>
-              <strong id="profileHealthStatus">--</strong>
-            </div>
-            <div class="profile-item">
-              <span>Main Goal</span>
-              <strong id="profileGoal">--</strong>
-            </div>
-          </div>
-
-          <button class="btn-logout" onclick="handleLogout()">Log Out</button>
-        </div>
-
-        <div class="nav-bar">
-          <div class="nav-item" onclick="navigateTo('mainDashboard')">
-            <div class="icon">🏠</div>
-            <div class="label">Home</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('aiCoach')">
-            <div class="icon">🤖</div>
-            <div class="label">AI Coach</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('metrics')">
-            <div class="icon">📊</div>
-            <div class="label">Metrics</div>
-          </div>
-          <div class="nav-item" onclick="navigateTo('mealLog')">
-            <div class="icon">🍽</div>
-            <div class="label">Meal Log</div>
-          </div>
-          <div class="nav-item active" onclick="navigateTo('profile')">
-            <div class="icon">👤</div>
-            <div class="label">Profile</div>
-          </div>
+        <div class="modal-footer">
+          <!-- buttons correctly use explicit onclick; consider type="button" for clarity -->
+          <button class="btn-skip" onclick="skipWeightInput()">Skip</button>
+          <button class="btn-save" onclick="saveWeightInput()">Save</button>
         </div>
       </div>
     </div>
 
-    <script src="/static/script.js"></script>
+    <div id="mainDashboard" class="screen">
+      <div class="main-page">
+        <div class="header">
+          <h1>Hi <span id="userName">there</span>! 💪</h1>
+          <p id="empoweringMessage">
+            You're doing amazing! Keep up the great work!
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="icon">👟</div>
+            <div class="value" id="stepCount">0</div>
+            <div class="label">Steps Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">🍎</div>
+            <div class="value" id="caloriesGained">0</div>
+            <div class="label">Calories In</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">🔥</div>
+            <div class="value" id="caloriesBurnt">0</div>
+            <div class="label">Calories Out</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">🎯</div>
+            <div class="value" id="streakCount">0</div>
+            <div class="label">Day Streak</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Today's Meals</h3>
+          <div id="mealLogContainer" class="meal-log-card">
+            <div class="meal-log-empty">
+              <div class="icon">🍽</div>
+              <p>No meals logged yet today</p>
+              <button class="btn-add-meal" onclick="navigateTo('mealLog')">
+                Log Your First Meal
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div id="aiFeedbackContainer" class="ai-feedback-card">
+            <h3>💡 Valdo's Insight</h3>
+            <p id="aiFeedback">
+              Start logging your meals to get personalized feedback!
+            </p>
+          </div>
+        </div>
+
+        <div class="section">
+          <!-- This tile is clickable; it's a div with onclick — ensure keyboard accessibility (tabindex, key handlers) -->
+          <div class="ai-coach-tile" onclick="navigateTo('aiCoach')">
+            <h3>🤖 Chat with Valdo</h3>
+            <p>Get personalized health advice anytime</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="progress-card">
+            <h3>Health Plan Progress</h3>
+            <p id="progressText">
+              Start your journey by logging meals and tracking activity
+            </p>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p
+              style="
+                text-align: right;
+                font-size: 0.9rem;
+                color: #666;
+                margin-top: 5px;
+              "
+            >
+              <span id="progressPercent">0</span>%
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-bar">
+        <!-- nav items are divs with onclick. For accessibility consider using <button> or <a> elements with aria-current and proper roles -->
+        <div class="nav-item active" onclick="navigateTo('mainDashboard')">
+          <div class="icon">🏠</div>
+          <div class="label">Home</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('aiCoach')">
+          <div class="icon">🤖</div>
+          <div class="label">AI Coach</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('metrics')">
+          <div class="icon">📊</div>
+          <div class="label">Metrics</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('mealLog')">
+          <div class="icon">🍽</div>
+          <div class="label">Meal Log</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')">
+          <div class="icon">👤</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="mealLog" class="screen">
+      <div class="meal-log-screen">
+        <h2>Log Your Meal</h2>
+        <p style="color: #666; margin-top: 10px">
+          Choose how you'd like to log your meal
+        </p>
+
+        <div id="mealLogOptions" class="meal-log-options">
+          <div class="option-card" onclick="showManualLog()">
+            <div class="icon">✏</div>
+            <h3>Manual Entry</h3>
+            <p>Enter meal details manually</p>
+          </div>
+          <div class="option-card" onclick="navigateTo('cameraScan')">
+            <div class="icon">📸</div>
+            <h3>Scan Nutrition Label</h3>
+            <p>Take photo of nutrition facts</p>
+          </div>
+        </div>
+
+        <!-- manual log form -->
+        <div id="manualLogForm" class="manual-log-form" style="">
+          <form onsubmit="submitMealLog(event)">
+            <div class="form-group">
+              <label>Meal Type</label>
+              <select id="mealType" required>
+                <option value="">Select...</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Food Description</label>
+              <input
+                type="text"
+                id="mealDescription"
+                placeholder="e.g., Grilled chicken with rice"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Calories</label>
+              <input
+                type="number"
+                id="mealCalories"
+                placeholder="e.g., 450"
+                required
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label>Carbs (g)</label>
+              <input
+                type="number"
+                id="mealCarbs"
+                placeholder="e.g., 45"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label>Protein (g)</label>
+              <input
+                type="number"
+                id="mealProtein"
+                placeholder="e.g., 30"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label>Fat (g)</label>
+              <input
+                type="number"
+                id="mealFat"
+                placeholder="e.g., 15"
+                min="0"
+              />
+            </div>
+            <button type="submit" class="btn-submit">Log Meal</button>
+            <button type="button" class="btn-back" onclick="hideManualLog()">
+              Back
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="nav-bar">
+        <div class="nav-item" onclick="navigateTo('mainDashboard')">
+          <div class="icon">🏠</div>
+          <div class="label">Home</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('aiCoach')">
+          <div class="icon">🤖</div>
+          <div class="label">AI Coach</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('metrics')">
+          <div class="icon">📊</div>
+          <div class="label">Metrics</div>
+        </div>
+        <div class="nav-item active" onclick="navigateTo('mealLog')">
+          <div class="icon">🍽</div>
+          <div class="label">Meal Log</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')">
+          <div class="icon">👤</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="successModal" class="modal">
+      <div class="modal-content success-modal">
+        <div class="modal-header">
+          <div class="success-icon">✅</div>
+          <h3>Success!</h3>
+        </div>
+        <div class="modal-body">
+          <p id="successMessage" class="success-details">Meal logged successfully!</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" onclick="closeSuccessModal()">Continue to Dashboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Updated Camera Scan Screen -->
+    <div id="cameraScan" class="screen">
+      <div class="camera-scan-screen">
+        <h2>Scan Nutrition Label</h2>
+        <p style="color: #666; margin-top: 10px; text-align: center;">
+          Take a clear photo of the nutrition facts label
+        </p>
+
+        <div class="camera-container">
+          <!-- NOTE: video element will need JS to request camera; ensure script handles permission errors -->
+          <video id="cameraPreview" autoplay playsinline></video>
+          <!-- canvas hidden for captures; ensure script sets width/height or draws correctly -->
+          <canvas id="photoCanvas" style="display: none;"></canvas>
+
+          <div class="camera-controls">
+            <button id="captureBtn" class="btn-capture" onclick="capturePhoto()">
+              📸
+            </button>
+            <button class="btn-switch" onclick="switchCamera()">
+              🔄
+            </button>
+          </div>
+        </div>
+
+        <div id="scanResult" class="scan-result" style="display: none;">
+          <h3>✅ Scan Successful!</h3>
+          <p style="color: #666; margin-bottom: 15px;">We found these nutrition facts:</p>
+          <div id="nutritionData" class="nutrition-data">
+            <!-- Nutrition data will be displayed here -->
+          </div>
+          <div class="scan-actions">
+            <button class="btn-retry" onclick="retryScan()">Retry Scan</button>
+            <button class="btn-confirm" onclick="confirmScan()">Confirm & Log Meal</button>
+          </div>
+        </div>
+
+        <div id="scanError" class="scan-error" style="display: none;">
+          <div class="error-icon">⚠️</div>
+          <h3>Scan Failed</h3>
+          <p id="errorMessage">Could not read nutrition facts. Please try again.</p>
+          <button class="btn-retry" onclick="retryScan()">Try Again</button>
+        </div>
+
+        <div class="camera-instructions">
+          <h4>📋 Instructions:</h4>
+          <ul>
+            <li>Ensure good lighting</li>
+            <li>Position label clearly in frame</li>
+            <li>Avoid glare and shadows</li>
+            <li>Make sure text is readable</li>
+          </ul>
+        </div>
+
+        <button class="btn-back" onclick="navigateTo('mealLog')" style="margin-top: 20px;">
+          ← Back to Meal Log
+        </button>
+      </div>
+    </div>
+
+    <div id="aiCoach" class="screen">
+      <div class="ai-coach-screen">
+        <div class="chat-header">
+          <h2>Chat with Valdo 🤖</h2>
+          <p>Your AI Health Coach</p>
+        </div>
+
+        <!--
+          CHAT NOTES:
+          - chat messages container should ideally have aria-live="polite" (or "assertive" for urgent) so screen readers announce new messages.
+          - also ensure messages are sanitized before insertion to prevent XSS.
+        -->
+        <div class="chat-messages" id="chat" aria-live="polite">
+          <div class="msg bot">
+            <div class="bubble">Hi! I'm Valdo, your AI health coach. How can I help you today?</div>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <input
+            type="text"
+            id="userInput"
+            placeholder="Ask me anything about health..."
+          />
+          <!-- sendBtn is outside a form. Consider adding type="button" explicitly. -->
+          <button id="sendBtn" type="button">➤</button>
+        </div>
+      </div>
+
+      <div class="nav-bar">
+        <div class="nav-item" onclick="navigateTo('mainDashboard')">
+          <div class="icon">🏠</div>
+          <div class="label">Home</div>
+        </div>
+        <div class="nav-item active" onclick="navigateTo('aiCoach')">
+          <div class="icon">🤖</div>
+          <div class="label">AI Coach</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('metrics')">
+          <div class="icon">📊</div>
+          <div class="label">Metrics</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('mealLog')">
+          <div class="icon">🍽</div>
+          <div class="label">Meal Log</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')">
+          <div class="icon">👤</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="metrics" class="screen">
+      <div class="metrics-screen">
+        <h2>Your Health Metrics</h2>
+        <div class="section">
+            <div id="overallAiInsight" class="ai-feedback-card">
+                <h3>🌟 Valdo's Overall Insight</h3>
+                <p id="overallInsightText">Analyzing your health patterns...</p>
+            </div>
+        </div>
+        <p style="color: #666; margin-top: 10px; margin-bottom: 20px">
+          Track your progress over time
+        </p>
+
+        <div class="metric-card">
+          <h3>📊 Weekly Summary</h3>
+          <p style="margin: 15px 0; color: #666">
+            Average daily metrics this week
+          </p>
+          <div class="profile-item">
+            <span>Average Steps</span>
+            <strong>7,543</strong>
+          </div>
+          <div class="profile-item">
+            <span>Average Calories In</span>
+            <strong>2,150</strong>
+          </div>
+          <div class="profile-item">
+            <span>Average Calories Out</span>
+            <strong>2,340</strong>
+          </div>
+          <div id="overallHealthSummary" class="health-summary">
+            <p style="color: #666; margin: 15px 0">Your long-term health trends and patterns</p>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>💪 Current Stats</h3>
+          <div class="profile-item">
+            <span>Weight</span>
+            <strong id="currentWeight">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>Height</span>
+            <strong id="currentHeight">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>BMI</span>
+            <strong id="currentBMI">--</strong>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>🎯 Goals Progress</h3>
+          <div style="margin-top: 15px">
+            <p style="color: #666; margin-bottom: 10px">Daily Step Goal</p>
+            <div class="progress-bar-container">
+              <div class="progress-bar" style="width: 85%"></div>
+            </div>
+            <p
+              style="
+                text-align: right;
+                font-size: 0.9rem;
+                color: #666;
+                margin-top: 5px;
+              "
+            >
+              8,543 / 10,000 steps
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-bar">
+        <div class="nav-item" onclick="navigateTo('mainDashboard')">
+          <div class="icon">🏠</div>
+          <div class="label">Home</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('aiCoach')">
+          <div class="icon">🤖</div>
+          <div class="label">AI Coach</div>
+        </div>
+        <div class="nav-item active" onclick="navigateTo('metrics')">
+          <div class="icon">📊</div>
+          <div class="label">Metrics</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('mealLog')">
+          <div class="icon">🍽</div>
+          <div class="label">Meal Log</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')">
+          <div class="icon">👤</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile" class="screen">
+      <div class="profile-screen">
+        <div class="profile-header">
+          <div class="profile-avatar" id="profileAvatar">👤</div>
+          <h2 id="profileName">User Name</h2>
+          <p id="profileEmail" style="color: #666">user@example.com</p>
+        </div>
+
+        <div class="profile-section">
+          <h3 style="margin-bottom: 15px">Personal Information</h3>
+          <div class="profile-item">
+            <span>Age</span>
+            <strong id="profileAge">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>Gender</span>
+            <strong id="profileGender">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>Height</span>
+            <strong id="profileHeight">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>Weight</span>
+            <strong id="profileWeight">--</strong>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3 style="margin-bottom: 15px">Health Information</h3>
+          <div class="profile-item">
+            <span>Health Status</span>
+            <strong id="profileHealthStatus">--</strong>
+          </div>
+          <div class="profile-item">
+            <span>Main Goal</span>
+            <strong id="profileGoal">--</strong>
+          </div>
+        </div>
+
+        <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+      </div>
+
+      <div class="nav-bar">
+        <div class="nav-item" onclick="navigateTo('mainDashboard')">
+          <div class="icon">🏠</div>
+          <div class="label">Home</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('aiCoach')">
+          <div class="icon">🤖</div>
+          <div class="label">AI Coach</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('metrics')">
+          <div class="icon">📊</div>
+          <div class="label">Metrics</div>
+        </div>
+        <div class="nav-item" onclick="navigateTo('mealLog')">
+          <div class="icon">🍽</div>
+          <div class="label">Meal Log</div>
+        </div>
+        <div class="nav-item active" onclick="navigateTo('profile')">
+          <div class="icon">👤</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/static/script.js"></script>
+
   </body>
 </html>

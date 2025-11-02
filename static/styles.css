@@ -807,12 +807,7 @@ body {
 }
 
 /* Metrics and Profile Screens */
-.metrics-screen,
-.profile-screen {
-  padding: 20px 20px 85px; /* Increased for taller nav bar */
-  min-height: 100vh;
-}
-
+/* Enhanced metric cards */
 .metric-card {
   background: var(--background-white);
   padding: 20px;
@@ -820,12 +815,88 @@ body {
   margin-bottom: 20px;
   box-shadow: var(--shadow-light);
   transition: var(--transition-fast);
+  border-left: 4px solid var(--primary-color);
 }
 
 .metric-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
+
+.metric-card h3 {
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+/* Trend indicators */
+.trend-up {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.trend-down {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+.trend-neutral {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Progress indicators */
+.metric-progress {
+  margin-top: 10px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Enhanced profile items for metrics */
+.metrics-screen .profile-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.metrics-screen .profile-item:last-child {
+  border-bottom: none;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.metric-change {
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
+/* Health status indicators */
+.health-excellent { color: #27ae60; }
+.health-good { color: #2ecc71; }
+.health-fair { color: #f39c12; }
+.health-poor { color: #e74c3c; }
+
+/* Sugar level indicators */
+.sugar-low { color: #27ae60; }
+.sugar-moderate { color: #f39c12; }
+.sugar-high { color: #e74c3c; }
+
+/* BMI classification */
+.bmi-underweight { color: #3498db; }
+.bmi-normal { color: #27ae60; }
+.bmi-overweight { color: #f39c12; }
+.bmi-obese { color: #e74c3c; }
 
 .profile-header {
   text-align: center;
@@ -1414,6 +1485,7 @@ body {
   .section {
     padding: 15px;
   }
+
 
   .meal-log-screen,
   .metrics-screen,

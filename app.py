@@ -42,35 +42,28 @@ CHAT_SYSTEM_PROMPT = (
 )
 
 NUTRITION_SCAN_PROMPT = (
-    "You are a nutrition facts scanner. Analyze the nutrition label image and extract the following information in EXACT JSON format: "
+    "You are a nutrition facts and meal. Analyze the nutrition label image. "
+    "If it is a consumable item scan it and continue with estimated nutrition fact. "
+    "extract the following information in EXACT JSON format: "
     "{\"calories\": number, \"fat\": number, \"carbohydrates\": number, \"sugar\": number, \"protein\": number, \"serving_size\": string}. "
-    "Only return the JSON object, no additional text. If any value is not available, use null. "
+    "Only return the JSON object, no additional text. If any value is not available, use 'null'. "
     "Make sure to extract the numerical values only (without units). For example, if it says 'Calories: 250', return 250. "
     "If the label shows values per container with multiple servings, try to estimate per serving or use the per serving values."
 )
 
-
-def try_huggingface_model(message):
-    """Try a specific Hugging Face model with the OpenAI-style client API"""
-    try:
-        client = OpenAI(
-            base_url="https://router.huggingface.co/v1",
-            api_key=TOKEN
-        )
-
-        completion = client.chat.completions.create(
-            model="AndresR2909/Llama-3.1-8B-Instruct-suicide-related-text-classification:featherless-ai",
-            messages=[
-                {"role": "system", "content": CHAT_SYSTEM_PROMPT},
-                {"role": "user", "content": message}
-            ],
-        )
-
-        return completion.choices[0].message.content
-
-    except Exception as e:
-        print("Error:", e)
-        return None
+# Enhanced system prompt for lifestyle insights
+LIFESTYLE_INSIGHT_PROMPT = (
+    "You are a knowledgeable and empathetic health coach providing overall lifestyle assessments. "
+    "Based on the user's health metrics data, provide a balanced assessment that:\n"
+    "1. Highlights positive patterns and strengths\n"
+    "2. Gently identifies areas for improvement\n"
+    "3. Provides one practical, actionable recommendation\n"
+    "4. Maintains an encouraging and motivational tone\n"
+    "5. Relates findings to the user's stated health goals\n\n"
+    "Keep responses concise (3-4 sentences max) and focus on sustainable habits. "
+    "Avoid medical advice - instead encourage consultation with healthcare professionals. "
+    "Use specific metrics to support your observations when possible."
+)
 
 
 def scan_nutrition_facts(image_data):
@@ -114,7 +107,6 @@ def scan_nutrition_facts(image_data):
         print(f"Nutrition scan error: {e}")
         return None
 
-
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json or {}
@@ -150,12 +142,17 @@ def chat():
                 "source": "emergency"
             })
 
+    # Use lifestyle insight prompt for metrics-related queries
+    system_prompt = CHAT_SYSTEM_PROMPT
+    if any(keyword in msg_lower for keyword in ["overall", "lifestyle", "assessment", "pattern", "trend", "summary"]):
+        system_prompt = LIFESTYLE_INSIGHT_PROMPT
+
     # --- Regular AI Response ---
     reply = None
     source = "fallback"
 
     if TOKEN:
-        reply = try_huggingface_model(message)
+        reply = try_huggingface_model(message, system_prompt)
         if reply:
             source = "huggingface_ai"
 
@@ -171,6 +168,27 @@ def chat():
 
     return jsonify({"reply": reply, "source": source})
 
+def try_huggingface_model(message, system_prompt=CHAT_SYSTEM_PROMPT):
+    """Try a specific Hugging Face model with the OpenAI-style client API"""
+    try:
+        client = OpenAI(
+            base_url="https://router.huggingface.co/v1",
+            api_key=TOKEN
+        )
+
+        completion = client.chat.completions.create(
+            model="AndresR2909/Llama-3.1-8B-Instruct-suicide-related-text-classification:featherless-ai",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ],
+        )
+
+        return completion.choices[0].message.content
+
+    except Exception as e:
+        print("Error:", e)
+        return None
 
 @app.route("/scan-nutrition", methods=["POST"])
 def scan_nutrition():
@@ -213,5 +231,5 @@ def index():
 
 
 if __name__ == "__main__":
-    print("Starting MediBot with nutrition scanning at http://localhost:5000")
+    print("Starting Valdo at http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)

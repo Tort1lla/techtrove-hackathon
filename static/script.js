@@ -863,70 +863,208 @@ async function updateDashboard() {
   console.log('Dashboard update completed');
 }
 
-// Update metrics screen with actual data
+// Enhanced metrics screen with AI insight and comprehensive data
 async function updateMetricsScreen() {
   const todaysMeals = getTodaysMeals();
   const allMeals = mealsLogged;
   const uniqueDates = new Set(mealsLogged.map(meal => meal.date));
   const totalDays = uniqueDates.size;
+  const trackingStartDate = mealsLogged.length > 0 ?
+    new Date(Math.min(...mealsLogged.map(m => new Date(m.date)))) : new Date();
 
-  // Update current stats
+  // Calculate comprehensive metrics
+  const totalCalories = allMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const avgDailyCalories = totalDays > 0 ? Math.round(totalCalories / totalDays) : 0;
+  const totalSugar = getTotalSugar(allMeals);
+  const avgDailySugar = totalDays > 0 ? Math.round(totalSugar / totalDays) : 0;
+  const totalCarbs = allMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+  const totalProtein = allMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+  const totalFat = allMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+
+  // Calculate averages
+  const avgDailyCarbs = totalDays > 0 ? Math.round(totalCarbs / totalDays) : 0;
+  const avgDailyProtein = totalDays > 0 ? Math.round(totalProtein / totalDays) : 0;
+  const avgDailyFat = totalDays > 0 ? Math.round(totalFat / totalDays) : 0;
+
+  // Calculate average steps (using recent data)
+  const avgSteps = Math.round(stepCount * (totalDays > 0 ? Math.min(totalDays / 7, 1) : 1));
+
+  // Update current stats with BMI calculation
   const currentWeight = document.getElementById('currentWeight');
-  if (currentWeight) {
-    currentWeight.textContent = userData.weight ? `${userData.weight} kg` : '--';
+  if (currentWeight && userData.weight) {
+    currentWeight.textContent = `${userData.weight} kg`;
+    currentWeight.className = 'metric-value';
   }
 
   const currentHeight = document.getElementById('currentHeight');
-  if (currentHeight) {
-    currentHeight.textContent = userData.height ? `${userData.height} cm` : '--';
+  if (currentHeight && userData.height) {
+    currentHeight.textContent = `${userData.height} cm`;
+    currentHeight.className = 'metric-value';
   }
 
   const currentBMI = document.getElementById('currentBMI');
   if (currentBMI && userData.weight && userData.height) {
     const bmi = (userData.weight / ((userData.height / 100) ** 2)).toFixed(1);
     currentBMI.textContent = bmi;
-  } else if (currentBMI) {
-    currentBMI.textContent = '--';
+    currentBMI.className = 'metric-value';
+
+    // Add BMI classification
+    let bmiClass = 'bmi-normal';
+    if (bmi < 18.5) bmiClass = 'bmi-underweight';
+    else if (bmi < 25) bmiClass = 'bmi-normal';
+    else if (bmi < 30) bmiClass = 'bmi-overweight';
+    else bmiClass = 'bmi-obese';
+
+    currentBMI.classList.add(bmiClass);
   }
 
-  // Update weekly summary with actual data
-  const avgStepsElement = document.querySelector('.profile-item span:contains("Average Steps")');
-  if (avgStepsElement) {
-    avgStepsElement.nextElementSibling.textContent = stepCount.toLocaleString();
-  }
+  // Update weekly summary with comprehensive data
+  updateMetricElement('Average Steps', avgSteps.toLocaleString());
+  updateMetricElement('Average Calories In', avgDailyCalories.toLocaleString());
+  updateMetricElement('Average Calories Out', Math.round(avgSteps * 0.04).toLocaleString());
 
-  const avgCaloriesIn = document.querySelector('.profile-item span:contains("Average Calories In")');
-  if (avgCaloriesIn) {
-    const totalCalories = allMeals.reduce((sum, meal) => sum + meal.calories, 0);
-    const avgCalories = totalDays > 0 ? Math.round(totalCalories / totalDays) : 0;
-    avgCaloriesIn.nextElementSibling.textContent = avgCalories.toLocaleString();
-  }
+  // Add new metrics
+  updateMetricElement('Average Sugar Intake', `${avgDailySugar}g`);
+  updateMetricElement('Average Carbs', `${avgDailyCarbs}g`);
+  updateMetricElement('Average Protein', `${avgDailyProtein}g`);
+  updateMetricElement('Average Fat', `${avgDailyFat}g`);
 
-  const avgCaloriesOut = document.querySelector('.profile-item span:contains("Average Calories Out")');
-  if (avgCaloriesOut) {
-    const avgCaloriesBurnt = Math.round(stepCount * 0.04 * (totalDays > 0 ? totalDays / 7 : 1));
-    avgCaloriesOut.nextElementSibling.textContent = avgCaloriesBurnt.toLocaleString();
-  }
-
-  // Update sugar intake in metrics
-  const totalSugar = getTotalSugar(todaysMeals);
-  const sugarItems = document.querySelectorAll('.profile-item');
-  sugarItems.forEach(item => {
-    if (item.textContent.includes('Sugar')) {
-      item.querySelector('strong').textContent = `${totalSugar}g`;
+  // Add sugar level indicator
+  const sugarElement = document.querySelector('.profile-item span:contains("Average Sugar Intake")');
+  if (sugarElement) {
+    const sugarValue = sugarElement.nextElementSibling;
+    if (avgDailySugar > 50) {
+      sugarValue.classList.add('sugar-high');
+    } else if (avgDailySugar > 25) {
+      sugarValue.classList.add('sugar-moderate');
+    } else {
+      sugarValue.classList.add('sugar-low');
     }
-  });
+  }
+
+  // Update goals progress with actual data
+  const stepGoal = 10000;
+  const stepProgress = Math.min((stepCount / stepGoal) * 100, 100);
+  const mealGoal = 3;
+  const mealProgress = Math.min((todaysMeals.length / mealGoal) * 100, 100);
+
+  // Update progress bars
+  updateProgressBar('.progress-bar-container:first-child .progress-bar', stepProgress);
+  updateProgressBar('.progress-bar-container:last-child .progress-bar', mealProgress);
+
+  // Update progress labels
+  updateProgressLabel('.progress-bar-container:first-child', `Steps: ${stepCount.toLocaleString()} / ${stepGoal.toLocaleString()}`);
+  updateProgressLabel('.progress-bar-container:last-child', `Meals: ${todaysMeals.length} / ${mealGoal}`);
 
   // Update profile screen
   updateProfileScreen();
 
-  // Update overall health summary
-  const overallSummary = document.getElementById('overallHealthSummary');
-  if (overallSummary) {
-    overallSummary.innerHTML = '<p style="color: #666;">Loading overall summary...</p>';
-    const summary = await getOverallHealthSummary();
-    overallSummary.innerHTML = `<p style="color: #333; line-height: 1.4;">${summary}</p>`;
+  // Update overall AI insight
+  await updateOverallAIInsight({
+    totalDays,
+    totalMeals: allMeals.length,
+    avgSteps,
+    avgDailyCalories,
+    avgDailySugar,
+    avgDailyCarbs,
+    avgDailyProtein,
+    avgDailyFat,
+    stepGoalProgress: stepProgress,
+    mealGoalProgress: mealProgress,
+    bmi: userData.weight && userData.height ? (userData.weight / ((userData.height / 100) ** 2)).toFixed(1) : null,
+    healthStatus: userData.healthStatus,
+    mainGoal: userData.goal
+  });
+}
+
+// Helper function to update metric elements
+function updateMetricElement(label, value) {
+  const elements = document.querySelectorAll('.profile-item span');
+  elements.forEach(element => {
+    if (element.textContent.includes(label)) {
+      element.nextElementSibling.textContent = value;
+    }
+  });
+}
+
+// Helper function to update progress bars
+function updateProgressBar(selector, progress) {
+  const progressBar = document.querySelector(selector);
+  if (progressBar) {
+    progressBar.style.width = `${progress}%`;
+
+    // Color coding based on progress
+    if (progress >= 100) {
+      progressBar.style.background = 'var(--success-color)';
+    } else if (progress >= 75) {
+      progressBar.style.background = 'var(--primary-gradient)';
+    } else if (progress >= 50) {
+      progressBar.style.background = 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)';
+    } else {
+      progressBar.style.background = 'var(--error-color)';
+    }
   }
+}
+
+// Helper function to update progress labels
+function updateProgressLabel(containerSelector, text) {
+  const container = document.querySelector(containerSelector);
+  if (container) {
+    const label = container.querySelector('p:last-child');
+    if (label) {
+      label.textContent = text;
+    }
+  }
+}
+
+// New function for overall AI insight
+async function updateOverallAIInsight(metrics) {
+  const insightElement = document.getElementById('overallInsightText');
+  if (!insightElement) return;
+
+  insightElement.textContent = "Analyzing your health patterns...";
+
+  const prompt = `Provide a comprehensive but concise overall lifestyle assessment (max 3-4 sentences) based on this data:
+
+Tracking Duration: ${metrics.totalDays} days
+Total Meals Logged: ${metrics.totalMeals}
+Average Daily Steps: ${metrics.avgSteps.toLocaleString()}
+Average Daily Calories: ${metrics.avgDailyCalories}
+Average Daily Sugar: ${metrics.avgDailySugar}g
+Average Daily Carbs: ${metrics.avgDailyCarbs}g
+Average Daily Protein: ${metrics.avgDailyProtein}g
+Average Daily Fat: ${metrics.avgDailyFat}g
+Step Goal Progress: ${Math.round(metrics.stepGoalProgress)}%
+Meal Logging Consistency: ${Math.round(metrics.mealGoalProgress)}%
+BMI: ${metrics.bmi || 'Not available'}
+Health Status: ${metrics.healthStatus}
+Main Goal: ${metrics.mainGoal}
+
+Provide an overall assessment of lifestyle habits, highlight strengths and areas for improvement, and give one key recommendation. Be encouraging but honest. Focus on patterns and long-term health.`;
+
+  try {
+    const response = await fetch('http://localhost:5000/chat', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: prompt })
+    });
+
+    const data = await response.json();
+    insightElement.textContent = data.reply || "Your consistent tracking shows great commitment to health! Keep maintaining balanced nutrition and regular activity for long-term wellness.";
+    console.log(data.reply)
+  } catch (error) {
+    console.error('Error getting overall insight:', error);
+    insightElement.textContent = "Your health tracking dedication is impressive! Regular monitoring helps build sustainable healthy habits for lifelong wellness.";
+  }
+}
+
+// Add this helper function to calculate trends
+function calculateTrend(current, previous) {
+  if (previous === 0) return 'neutral';
+  const change = ((current - previous) / previous) * 100;
+  if (change > 5) return 'up';
+  if (change < -5) return 'down';
+  return 'neutral';
 }
 
 // Update profile screen with actual data
